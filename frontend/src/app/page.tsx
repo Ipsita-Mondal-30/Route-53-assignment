@@ -32,7 +32,7 @@ export default function LandingPage() {
         <AwsNavbar />
       </header>
 
-      <div className="bg-linear-to-b from-[#d8f4f8] via-[#e7e9fb] to-white">
+      <div className="hero-gradient">
         <div className="pt-5 md:pt-6">
           <Route53Navbar />
         </div>

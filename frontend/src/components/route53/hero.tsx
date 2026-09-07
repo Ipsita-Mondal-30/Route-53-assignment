@@ -9,7 +9,7 @@ const crumbs = [
 
 export function Hero() {
   return (
-    <section id="overview" className="px-5 pt-8 pb-10 md:px-8 md:pt-12 md:pb-16">
+    <section id="overview" className="px-5 pt-10 pb-16 md:px-8 md:pt-14 md:pb-24">
       <div className="mx-auto max-w-[1450px]">
         <nav aria-label="Breadcrumb" className="mb-10 text-[14px] text-aws-text">
           <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">

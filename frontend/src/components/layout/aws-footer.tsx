@@ -51,7 +51,7 @@ export function AwsFooter() {
       <div className="mx-auto max-w-[1450px] px-5 py-10 md:px-8 md:py-14">
         <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <Link
-            href="/login"
+            href="/signup"
             className="aws-focus inline-flex h-12 items-center justify-center rounded-full bg-white px-6 text-[15px] font-bold text-aws-ink hover:bg-[#f2f3f3]"
           >
             Create an AWS account

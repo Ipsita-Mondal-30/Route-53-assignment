@@ -28,6 +28,78 @@ body {
   font-family: var(--font-display);
 }
 
+.hero-gradient {
+  position: relative;
+  background:
+    linear-gradient(to bottom, transparent 48%, #ffffff 100%),
+    linear-gradient(
+      to right,
+      #f2f7fb 0%,
+      #eaf3f8 12%,
+      rgba(234, 243, 248, 0.5) 26%,
+      transparent 44%
+    ),
+    linear-gradient(
+      115deg,
+      #9ed8ec 0%,
+      #b5dff0 18%,
+      #c5d0f5 42%,
+      #b9a4e8 68%,
+      #a78bdb 100%
+    );
+  background-size: 100% 100%, 100% 100%, 220% 100%;
+  background-position: 0 0, 0 0, 0% 50%;
+  animation: hero-gradient-shift 10s ease-in-out infinite alternate;
+}
+
+@keyframes hero-gradient-shift {
+  0% {
+    background-position: 0 0, 0 0, 0% 50%;
+  }
+  100% {
+    background-position: 0 0, 0 0, 100% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-gradient {
+    animation: none;
+    background-position: 0 0, 0 0, 40% 50%;
+  }
+}
+
+/* Reusable soft purple/magenta hover glow (AWS top-bar profile style) */
+.aws-glow {
+  position: relative;
+  isolation: isolate;
+}
+
+.aws-glow::before {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  z-index: -1;
+  border-radius: 9999px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms ease;
+  background: radial-gradient(
+    circle at 38% 50%,
+    rgba(91, 33, 182, 0.95) 0%,
+    rgba(124, 58, 237, 0.75) 28%,
+    rgba(168, 40, 150, 0.55) 48%,
+    rgba(136, 19, 100, 0.28) 62%,
+    transparent 74%
+  );
+  filter: blur(5px);
+}
+
+.aws-glow:hover::before,
+.aws-glow.is-active::before,
+.aws-glow[aria-expanded="true"]::before {
+  opacity: 1;
+}
+
 section[id] {
   scroll-margin-top: 160px;
 }
