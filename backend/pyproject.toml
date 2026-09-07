@@ -22,6 +22,7 @@ itsdangerous = "^2.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.0"
+pytest-cov = "^6.0.0"
 httpx = "^0.28.0"
 ruff = "^0.9.0"
 black = "^25.1.0"
@@ -56,3 +57,24 @@ known-first-party = ["app"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+addopts = [
+    "--cov=app",
+    "--cov-report=term-missing",
+    "--cov-fail-under=80",
+]
+
+[tool.coverage.run]
+source = ["app"]
+branch = true
+omit = [
+    "app/db/seed.py",
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+]

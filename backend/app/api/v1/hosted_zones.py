@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
+from app.core.exceptions import NotFoundError
 from app.models.user import User
 from app.schemas.hosted_zone import (
     HostedZoneCreate,
@@ -14,7 +15,6 @@ from app.schemas.hosted_zone import (
     SortOrder,
 )
 from app.services import hosted_zone_service
-from app.services.hosted_zone_service import HostedZoneConflict, HostedZoneNotFound
 
 router = APIRouter(prefix="/hosted-zones", tags=["hosted-zones"])
 
@@ -55,14 +55,8 @@ def create_hosted_zone(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> HostedZoneOut:
-    try:
-        zone = hosted_zone_service.create(db, current_user, body)
-    except HostedZoneConflict as exc:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=str(exc),
-        ) from exc
-    return zone
+    # HostedZoneConflict -> 409 via global exception handler.
+    return hosted_zone_service.create(db, current_user, body)
 
 
 @router.get("/{zone_id}", response_model=HostedZoneOut)
@@ -73,10 +67,7 @@ def get_hosted_zone(
 ) -> HostedZoneOut:
     zone = hosted_zone_service.get_by_id(db, zone_id)
     if zone is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Hosted zone {zone_id} not found",
-        )
+        raise NotFoundError(f"Hosted zone {zone_id} not found")
     return zone
 
 
@@ -87,26 +78,19 @@ def update_hosted_zone(
     db: Session = Depends(get_db),
     _current_user: User = Depends(get_current_user),
 ) -> HostedZoneOut:
-    try:
-        zone = hosted_zone_service.update(db, zone_id, body)
-    except HostedZoneNotFound as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(exc),
-        ) from exc
-    return zone
+    # HostedZoneNotFound -> 404 via global exception handler.
+    return hosted_zone_service.update(db, zone_id, body)
 
 
-@router.delete("/{zone_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{zone_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
 def delete_hosted_zone(
     zone_id: str,
     db: Session = Depends(get_db),
     _current_user: User = Depends(get_current_user),
-) -> None:
-    try:
-        hosted_zone_service.delete(db, zone_id)
-    except HostedZoneNotFound as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(exc),
-        ) from exc
+) -> Response:
+    hosted_zone_service.delete(db, zone_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

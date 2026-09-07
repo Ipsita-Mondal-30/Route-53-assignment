@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 SESSION_COOKIE_NAME = "session_id"
@@ -48,6 +50,15 @@ class Settings(BaseSettings):
         default="DemoPass123!",
         validation_alias="DEMO_USER_PASSWORD",
     )
+    login_rate_limit: int = Field(
+        default=10,
+        validation_alias="LOGIN_RATE_LIMIT",
+        description="Max /auth/login attempts per IP per window",
+    )
+    login_rate_window_seconds: int = Field(
+        default=60,
+        validation_alias="LOGIN_RATE_WINDOW_SECONDS",
+    )
 
     @property
     def cors_origins(self) -> list[str]:
@@ -64,6 +75,23 @@ class Settings(BaseSettings):
     @property
     def is_prod(self) -> bool:
         return self.environment == "prod"
+
+    @model_validator(mode="after")
+    def validate_prod_cors(self) -> Settings:
+        """In prod, CORS must be an explicit allow-list — never empty or ``*``."""
+        if not self.is_prod:
+            return self
+        origins = self.cors_origins
+        if not origins:
+            raise ValueError(
+                "CORS_ORIGINS must list explicit origins in production "
+                "(wildcard / empty is not allowed)"
+            )
+        if any(origin == "*" for origin in origins):
+            raise ValueError(
+                "CORS_ORIGINS must not contain '*' in production"
+            )
+        return self
 
 
 @lru_cache

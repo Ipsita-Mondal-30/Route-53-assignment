@@ -8,7 +8,7 @@ from sqlalchemy import select
 
 from app.core.config import settings
 from app.core.security import hash_password
-from app.db.session import SessionLocal
+from app.db import session as db_session
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,8 @@ def seed_demo_user() -> User:
     email = settings.demo_user_email.lower().strip()
     password = settings.demo_user_password
 
-    db = SessionLocal()
+    # Look up SessionLocal at call time so tests can swap the engine.
+    db = db_session.SessionLocal()
     try:
         user = db.scalar(select(User).where(User.email == email))
         password_hash = hash_password(password)

@@ -53,9 +53,12 @@ SessionLocal = sessionmaker(
 
 
 def get_db() -> Generator[Session, None, None]:
-    """Yield a database session and ensure it is closed afterwards."""
+    """Yield a DB session; roll back on error and always close."""
     db = SessionLocal()
     try:
         yield db
+    except Exception:
+        db.rollback()
+        raise
     finally:
         db.close()
