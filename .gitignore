@@ -1,0 +1,17 @@
+# OS / editor
+.DS_Store
+.vscode/
+
+# Frontend
+node_modules
+.next
+.env
+.env.local
+
+# Backend
+__pycache__
+.pytest_cache
+.venv
+*.pyc
+*.db
+**/data/*.db

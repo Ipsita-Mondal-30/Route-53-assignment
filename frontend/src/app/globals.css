@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: var(--font-nunito), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --color-aws-navy: #202938;
+  --color-aws-ink: #161d26;
+  --color-aws-text: #0f141a;
+  --color-aws-muted: #545b64;
+  --color-aws-link: #006ce0;
+  --color-aws-border: #d5dbdb;
+  --color-aws-footer: #16191f;
+  --color-aws-footer-link: #d5dbdb;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #fff;
+  color: var(--color-aws-text);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+section[id] {
+  scroll-margin-top: 160px;
+}
+
+.aws-focus {
+  outline: none;
+}
+
+.aws-focus:focus-visible {
+  outline: 2px solid var(--color-aws-link);
+  outline-offset: 3px;
+}
+
+.aws-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #161d26;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 120ms ease;
+}
+
+.aws-btn-primary:hover {
+  background: #000;
+}
+
+.aws-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #fff;
+  color: #161d26;
+  border: 1px solid #161d26;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 120ms ease;
+}
+
+.aws-btn-secondary:hover {
+  background: #f2f3f3;
+}
