@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { ConsoleFooter } from "@/components/console/console-footer";
@@ -10,7 +10,11 @@ import {
   ServiceBreadcrumb,
   type BreadcrumbCrumb,
 } from "@/components/console/service-breadcrumb";
-import { DEMO_CONSOLE_SESSION, ensureConsoleSession } from "@/lib/auth";
+import {
+  DEMO_CONSOLE_SESSION,
+  fetchCurrentUser,
+  type ConsoleSession,
+} from "@/lib/auth";
 import { Route53StoreProvider } from "@/lib/mock/store";
 
 function crumbsForPath(pathname: string): BreadcrumbCrumb[] {
@@ -49,15 +53,36 @@ function crumbsForPath(pathname: string): BreadcrumbCrumb[] {
 
 export function ConsoleLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [session, setSession] = useState(DEMO_CONSOLE_SESSION);
+  const router = useRouter();
+  const [session, setSession] = useState<ConsoleSession>(DEMO_CONSOLE_SESSION);
+  const [authReady, setAuthReady] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.add("console-mode");
-    setSession(ensureConsoleSession());
-    return () => document.documentElement.classList.remove("console-mode");
-  }, []);
+    let cancelled = false;
+
+    (async () => {
+      const current = await fetchCurrentUser();
+      if (cancelled) {
+        return;
+      }
+      if (!current) {
+        router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+        return;
+      }
+      setSession(current);
+      setAuthReady(true);
+    })();
+
+    return () => {
+      cancelled = true;
+      document.documentElement.classList.remove("console-mode");
+    };
+    // Intentionally run once on mount to avoid flashing on every route change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -81,6 +106,14 @@ export function ConsoleLayout({ children }: { children: ReactNode }) {
     } else {
       setMobileOpen((value) => !value);
     }
+  }
+
+  if (!authReady) {
+    return (
+      <div className="aws-console flex h-dvh items-center justify-center bg-[#161d27] text-[14px] text-[#aab7b8]">
+        Checking session…
+      </div>
+    );
   }
 
   return (

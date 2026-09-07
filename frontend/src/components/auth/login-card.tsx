@@ -1,19 +1,29 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { SocialLoginButtons } from "@/components/auth/social-login-buttons";
-import { isValidEmail, setMockSession } from "@/lib/auth";
+import { ApiError } from "@/lib/api";
+import { isValidEmail, loginWithPassword } from "@/lib/auth";
 
 const linkClass = "aws-focus text-[#00a1c9] hover:underline";
 
 export function LoginCard() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const searchParams = useSearchParams();
+  const [email, setEmail] = useState("demo@example.com");
+  const [password, setPassword] = useState("DemoPass123!");
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fromQuery = searchParams.get("email");
+    if (fromQuery) {
+      setEmail(fromQuery);
+    }
+  }, [searchParams]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -23,17 +33,25 @@ export function LoginCard() {
       setError("Enter a valid email address.");
       return;
     }
+    if (!password.trim()) {
+      setError("Enter your password.");
+      return;
+    }
 
     setError(null);
     setLoading(true);
 
-    await new Promise((resolve) => {
-      window.setTimeout(resolve, 500);
-    });
-
-    setMockSession(email);
-    setLoading(false);
-    router.push("/hosted-zones");
+    try {
+      await loginWithPassword(email, password);
+      const next = searchParams.get("next") || "/hosted-zones";
+      router.push(next.startsWith("/") ? next : "/hosted-zones");
+    } catch (err) {
+      const detail =
+        err instanceof ApiError ? err.detail : "Unable to sign in. Try again.";
+      setError(detail);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -67,6 +85,28 @@ export function LoginCard() {
             aria-describedby={error ? "login-email-error" : undefined}
             className="mt-1.5 h-[38px] w-full rounded-md border border-[#687078] bg-[#0f1419] px-3 text-[14px] text-[#d5dbdb] placeholder:italic placeholder:text-[#8d99a6] outline-none transition-[border-color,box-shadow] focus:border-[#00a1c9] focus:shadow-[0_0_0_1px_#00a1c9]"
           />
+
+          <label
+            htmlFor="login-password"
+            className="mt-4 block text-[14px] font-semibold text-white"
+          >
+            Password
+          </label>
+          <input
+            id="login-password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => {
+              setPassword(event.target.value);
+              if (error) {
+                setError(null);
+              }
+            }}
+            className="mt-1.5 h-[38px] w-full rounded-md border border-[#687078] bg-[#0f1419] px-3 text-[14px] text-[#d5dbdb] outline-none transition-[border-color,box-shadow] focus:border-[#00a1c9] focus:shadow-[0_0_0_1px_#00a1c9]"
+          />
+
           {error ? (
             <p
               id="login-email-error"
@@ -77,12 +117,16 @@ export function LoginCard() {
             </p>
           ) : null}
 
+          <p className="mt-2 text-[12px] text-[#8d99a6]">
+            Demo: demo@example.com / DemoPass123!
+          </p>
+
           <button
             type="submit"
             disabled={loading}
             className="mt-[18px] flex h-9 w-full items-center justify-center rounded-full bg-[#ff9900] text-[14px] font-bold text-black outline-none transition-colors hover:bg-[#ec7211] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00a1c9] disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {loading ? "Continuing…" : "Continue"}
+            {loading ? "Signing in…" : "Continue"}
           </button>
         </form>
 
@@ -126,9 +170,7 @@ export function LoginCard() {
           type="button"
           className="aws-focus text-[14px] font-normal text-[#00a1c9] hover:underline"
           onClick={() =>
-            setMessage(
-              "Support is mocked in this demo. Try continuing with any valid email.",
-            )
+            setMessage("Use demo@example.com / DemoPass123! to sign in.")
           }
         >
           Trouble Signing In?

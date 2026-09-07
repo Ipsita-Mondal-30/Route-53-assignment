@@ -1,5 +1,8 @@
 "use client";
 
+import type { ConsoleSession } from "@/lib/auth";
+import { logoutSession } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import {
   Bell,
@@ -16,11 +19,12 @@ import {
   AmazonQSearchIcon,
   AwsWordmark,
 } from "@/components/console/console-icons";
-import type { ConsoleSession } from "@/lib/auth";
 
 export function GlobalNav({ session }: { session: ConsoleSession }) {
+  const router = useRouter();
   const searchRef = useRef<HTMLInputElement>(null);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const menuId = useId();
   const accountRef = useRef<HTMLDivElement>(null);
 
@@ -172,10 +176,30 @@ export function GlobalNav({ session }: { session: ConsoleSession }) {
               <p className="px-3 pb-2 text-[13px] font-bold text-[#d1d5db]">
                 {session.name}
               </p>
-              <div className="border-t border-[#2a313c] px-3 pt-2">
-                <a href="/" className="text-[13px] font-bold text-[#42b4ff]">
+              <div className="border-t border-[#2a313c] px-3 pt-2 space-y-2">
+                {session.email ? (
+                  <p className="text-[12px] text-[#aab7b8]">{session.email}</p>
+                ) : null}
+                <a href="/" className="block text-[13px] font-bold text-[#42b4ff]">
                   aws.amazon.com
                 </a>
+                <button
+                  type="button"
+                  disabled={loggingOut}
+                  className="text-[13px] font-bold text-[#eb6f6f] hover:underline disabled:opacity-60"
+                  onClick={async () => {
+                    setLoggingOut(true);
+                    try {
+                      await logoutSession();
+                      router.replace("/login");
+                    } finally {
+                      setLoggingOut(false);
+                      setAccountOpen(false);
+                    }
+                  }}
+                >
+                  {loggingOut ? "Signing out…" : "Sign out"}
+                </button>
               </div>
             </div>
           ) : null}

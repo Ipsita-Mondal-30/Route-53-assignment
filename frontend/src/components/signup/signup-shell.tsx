@@ -5,7 +5,7 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { isValidEmail, setMockSession } from "@/lib/auth";
+import { isValidEmail } from "@/lib/auth";
 import { SignupLanguageSelect } from "@/components/signup/signup-language-select";
 
 const linkClass =
@@ -70,12 +70,9 @@ export function SignupShell() {
     }
 
     setLoading(true);
-    await new Promise((resolve) => {
-      window.setTimeout(resolve, 500);
-    });
-    setMockSession(email);
+    // No signup API — redirect to the session login form with the entered email.
+    router.push(`/login?email=${encodeURIComponent(email.trim())}`);
     setLoading(false);
-    router.push("/hosted-zones");
   }
 
   return (

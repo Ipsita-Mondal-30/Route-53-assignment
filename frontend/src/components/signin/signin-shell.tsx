@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 
 import { MultiSessionSelect } from "@/components/signin/multi-session-select";
 import { SignupLanguageSelect } from "@/components/signup/signup-language-select";
-import { isValidEmail, setMockSession } from "@/lib/auth";
+import { isValidEmail, loginWithPassword } from "@/lib/auth";
+import { ApiError } from "@/lib/api";
 
 const dottedLink =
   "text-[#0073bb] underline decoration-dotted underline-offset-2 hover:decoration-solid";
@@ -199,12 +200,9 @@ function RootSigninCard({
 
     setError(null);
     setLoading(true);
-    await new Promise((resolve) => {
-      window.setTimeout(resolve, 500);
-    });
-    setMockSession(email.trim());
+    // Root console UI collects email only — continue via the password login page.
+    router.push(`/login?email=${encodeURIComponent(email.trim())}`);
     setLoading(false);
-    router.push("/hosted-zones");
   }
 
   return (
@@ -389,12 +387,21 @@ function IamSigninCard({
 
     setError(null);
     setLoading(true);
-    await new Promise((resolve) => {
-      window.setTimeout(resolve, 500);
-    });
-    setMockSession(`${username.trim()}@${accountId.trim()}`);
-    setLoading(false);
-    router.push("/hosted-zones");
+    try {
+      const email = username.includes("@")
+        ? username.trim()
+        : `${username.trim()}@example.com`;
+      await loginWithPassword(email, password);
+      router.push("/hosted-zones");
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.detail
+          : "Unable to sign in. Use demo@example.com / DemoPass123!.",
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

@@ -1,0 +1,112 @@
+from __future__ import annotations
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
+from app.api.deps import get_current_user, get_db
+from app.models.user import User
+from app.schemas.hosted_zone import (
+    HostedZoneCreate,
+    HostedZoneListOut,
+    HostedZoneOut,
+    HostedZoneUpdate,
+    SortBy,
+    SortOrder,
+)
+from app.services import hosted_zone_service
+from app.services.hosted_zone_service import HostedZoneConflict, HostedZoneNotFound
+
+router = APIRouter(prefix="/hosted-zones", tags=["hosted-zones"])
+
+
+@router.get("", response_model=HostedZoneListOut)
+def list_hosted_zones(
+    search: str | None = Query(default=None),
+    sort_by: SortBy = Query(default="name"),
+    sort_order: SortOrder = Query(default="asc"),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+) -> HostedZoneListOut:
+    result = hosted_zone_service.list_paginated(
+        db,
+        search=search,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        page=page,
+        page_size=page_size,
+    )
+    return HostedZoneListOut(
+        items=result.items,
+        total=result.total,
+        page=result.page,
+        page_size=result.page_size,
+    )
+
+
+@router.post(
+    "",
+    response_model=HostedZoneOut,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_hosted_zone(
+    body: HostedZoneCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> HostedZoneOut:
+    try:
+        zone = hosted_zone_service.create(db, current_user, body)
+    except HostedZoneConflict as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        ) from exc
+    return zone
+
+
+@router.get("/{zone_id}", response_model=HostedZoneOut)
+def get_hosted_zone(
+    zone_id: str,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+) -> HostedZoneOut:
+    zone = hosted_zone_service.get_by_id(db, zone_id)
+    if zone is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Hosted zone {zone_id} not found",
+        )
+    return zone
+
+
+@router.put("/{zone_id}", response_model=HostedZoneOut)
+def update_hosted_zone(
+    zone_id: str,
+    body: HostedZoneUpdate,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+) -> HostedZoneOut:
+    try:
+        zone = hosted_zone_service.update(db, zone_id, body)
+    except HostedZoneNotFound as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+    return zone
+
+
+@router.delete("/{zone_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_hosted_zone(
+    zone_id: str,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+) -> None:
+    try:
+        hosted_zone_service.delete(db, zone_id)
+    except HostedZoneNotFound as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc

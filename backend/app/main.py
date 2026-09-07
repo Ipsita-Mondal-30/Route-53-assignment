@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from logging import getLogger
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,12 +9,19 @@ from app.api.v1.router import api_router
 from app.core.config import settings
 from app.db.session import engine
 
+logger = getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    # Startup hooks (DB warm-up, etc.) go here in later phases.
+    if settings.environment == "dev":
+        try:
+            from app.db.seed import seed_demo_user
+
+            seed_demo_user()
+        except Exception:
+            logger.exception("Failed to seed demo user on startup")
     yield
-    # Shutdown: dispose SQLAlchemy engine connections.
     engine.dispose()
 
 

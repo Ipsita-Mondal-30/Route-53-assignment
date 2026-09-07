@@ -67,6 +67,16 @@ Backend (`backend/.env.example`):
 DATABASE_URL=sqlite:///./data/route53.db
 SESSION_SECRET=change-me-dev-secret
 SESSION_EXPIRE_MINUTES=1440
-CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001
 ENVIRONMENT=dev
+DEMO_USER_EMAIL=demo@example.com
+DEMO_USER_PASSWORD=DemoPass123!
+```
+
+Demo login: `demo@example.com` / `DemoPass123!`
+
+```bash
+cd backend
+poetry run python -m app.db.seed
+poetry run uvicorn app.main:app --reload --port 8000
 ```

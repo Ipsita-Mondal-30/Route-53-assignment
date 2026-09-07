@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { FaAws } from "react-icons/fa";
 
 import { LoginCard } from "@/components/auth/login-card";
@@ -30,7 +31,9 @@ export default function LoginPage() {
       </header>
 
       <main className="flex flex-1 justify-center items-start px-0 pt-16 sm:pt-[65px] pb-6">
-        <LoginCard />
+        <Suspense fallback={<div className="text-[#aab7b8]">Loading…</div>}>
+          <LoginCard />
+        </Suspense>
       </main>
 
       <LoginFooter />

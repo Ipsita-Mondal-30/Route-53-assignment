@@ -1,7 +1,4 @@
-"""Password hashing and session token helpers.
-
-Auth routes are not implemented yet — these utilities are ready for later phases.
-"""
+"""Password hashing and session token helpers."""
 
 from __future__ import annotations
 
@@ -14,6 +11,7 @@ from passlib.context import CryptContext
 
 from app.core.config import settings
 
+# bcrypt backend is pinned to 4.0.1 in pyproject for passlib compatibility.
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
