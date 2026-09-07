@@ -111,6 +111,25 @@ def list_paginated(
     )
 
 
+def list_all(db: Session, zone_id: str) -> list[DnsRecord]:
+    """Return every record in a zone, ordered stably for export."""
+    zone = db.get(HostedZone, zone_id)
+    if zone is None:
+        raise HostedZoneNotFound(f"Hosted zone {zone_id} not found")
+
+    return list(
+        db.scalars(
+            select(DnsRecord)
+            .where(DnsRecord.hosted_zone_id == zone_id)
+            .order_by(
+                DnsRecord.name.asc(),
+                DnsRecord.type.asc(),
+                DnsRecord.id.asc(),
+            )
+        ).all()
+    )
+
+
 def update(
     db: Session,
     record_id: str,

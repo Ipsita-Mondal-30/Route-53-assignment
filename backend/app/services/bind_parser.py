@@ -297,7 +297,8 @@ def _join_txt(tokens: list[str]) -> str:
     ]
     if quoted and len(quoted) == len(tokens):
         joined = "".join(_unescape_quoted(token[1:-1]) for token in tokens)
-        return f'"{joined}"'
+        escaped = joined.replace("\\", "\\\\").replace('"', '\\"')
+        return f'"{escaped}"'
     return " ".join(tokens)
 
 

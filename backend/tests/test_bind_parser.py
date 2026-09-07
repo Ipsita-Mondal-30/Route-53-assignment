@@ -69,6 +69,14 @@ def test_txt_quoted() -> None:
     assert records[0].rdata == '"v=spf1 include:example.com ~all"'
 
 
+def test_txt_escaped_quotes_round_trip() -> None:
+    records = parse_zone(
+        r'@ IN TXT "say \"hello\""',
+        zone_origin=ORIGIN,
+    )
+    assert records[0].rdata == r'"say \"hello\""'
+
+
 def test_ns() -> None:
     records = parse_zone(
         "@ IN NS ns-1.awsdns-00.com.",

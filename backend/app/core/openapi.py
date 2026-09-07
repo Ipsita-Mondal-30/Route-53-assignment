@@ -40,7 +40,9 @@ OPENAPI_TAGS: list[dict[str, str]] = [
         "description": (
             "CRUD for hosted zones (public/private DNS containers). "
             "List supports search, sort, and pagination. "
-            "Deleting a zone cascades to its DNS records."
+            "Deleting a zone cascades to its DNS records. "
+            "Zones can be exported as JSON or BIND (`GET /hosted-zones/{id}/export`, "
+            "`POST /hosted-zones/export`)."
         ),
     },
     {

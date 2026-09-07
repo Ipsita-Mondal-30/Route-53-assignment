@@ -127,7 +127,7 @@ export function GlobalNav({
             ref={searchRef}
             type="search"
             placeholder="Search"
-            className="h-8 w-full max-w-[720px] rounded-md border border-[#545b64] bg-[#0f141a] py-0 pr-[210px] pl-9 text-[14px] leading-5 font-normal text-white outline-none placeholder:italic placeholder:font-normal placeholder:text-[#aab7b8] focus:border-[#42b4ff] focus:shadow-[0_0_0_1px_#42b4ff]"
+            className="h-8 w-full max-w-[720px] rounded-md border border-[#545b64] bg-[#05070a] py-0 pr-[210px] pl-9 text-[14px] leading-5 font-normal text-white outline-none placeholder:italic placeholder:font-normal placeholder:text-[#aab7b8] focus:border-[#42b4ff] focus:shadow-[0_0_0_1px_#42b4ff]"
           />
           <span className="pointer-events-none absolute top-1/2 right-[138px] -translate-y-1/2 text-[12px] leading-none font-bold text-[#aab7b8]">
             [Option+S]

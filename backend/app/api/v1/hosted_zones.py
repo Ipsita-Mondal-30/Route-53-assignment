@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from urllib.parse import quote
+
 from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.orm import Session
 
@@ -14,7 +16,9 @@ from app.schemas.hosted_zone import (
     SortBy,
     SortOrder,
 )
-from app.services import hosted_zone_service
+from app.schemas.hosted_zone_export import ExportFormat, HostedZoneBulkExportRequest
+from app.services import hosted_zone_export_service, hosted_zone_service
+from app.services.hosted_zone_export_service import ExportFile
 
 router = APIRouter(prefix="/hosted-zones", tags=["hosted-zones"])
 
@@ -57,6 +61,46 @@ def create_hosted_zone(
 ) -> HostedZoneOut:
     # HostedZoneConflict -> 409 via global exception handler.
     return hosted_zone_service.create(db, current_user, body)
+
+
+@router.post("/export")
+def export_hosted_zones(
+    body: HostedZoneBulkExportRequest,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+) -> Response:
+    """Export one or more hosted zones as JSON, BIND, or a BIND zip."""
+    payload = hosted_zone_export_service.export_zones(
+        db, body.zone_ids, body.format
+    )
+    return _attachment_response(payload)
+
+
+@router.get("/{zone_id}/export")
+def export_hosted_zone(
+    zone_id: str,
+    format: ExportFormat = Query(default="json"),  # noqa: A002 — public query name
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+) -> Response:
+    payload = hosted_zone_export_service.export_zone(db, zone_id, format)
+    return _attachment_response(payload)
+
+
+def _attachment_response(payload: ExportFile) -> Response:
+    ascii_name = payload.filename.encode("ascii", "replace").decode("ascii")
+    disposition = (
+        f'attachment; filename="{ascii_name}"; '
+        f"filename*=UTF-8''{quote(payload.filename)}"
+    )
+    return Response(
+        content=payload.content,
+        media_type=payload.media_type,
+        headers={
+            "Content-Disposition": disposition,
+            "X-Export-Filename": payload.filename,
+        },
+    )
 
 
 @router.get("/{zone_id}", response_model=HostedZoneOut)
