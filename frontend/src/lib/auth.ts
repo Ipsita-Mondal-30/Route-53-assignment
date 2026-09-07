@@ -46,3 +46,45 @@ export function clearMockSession(): void {
   }
   window.localStorage.removeItem(STORAGE_KEY);
 }
+
+export type ConsoleSession = {
+  id: string;
+  name: string;
+  workgroup: string;
+};
+
+export const DEMO_CONSOLE_SESSION: ConsoleSession = {
+  id: "demo-user",
+  name: "avi",
+  workgroup: "Workp... (497535504622)",
+};
+
+const CONSOLE_SESSION_KEY = "route53.console.session";
+
+export function ensureConsoleSession(): ConsoleSession {
+  if (typeof window === "undefined") {
+    return DEMO_CONSOLE_SESSION;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(CONSOLE_SESSION_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as ConsoleSession;
+      if (parsed.id && parsed.name && parsed.workgroup) {
+        return parsed;
+      }
+    }
+  } catch {
+    /* ignore corrupt session */
+  }
+
+  window.localStorage.setItem(
+    CONSOLE_SESSION_KEY,
+    JSON.stringify(DEMO_CONSOLE_SESSION),
+  );
+  return DEMO_CONSOLE_SESSION;
+}
+
+export function getConsoleSession(): ConsoleSession {
+  return ensureConsoleSession();
+}

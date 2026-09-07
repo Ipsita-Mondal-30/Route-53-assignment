@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
-  return children;
+import { ConsoleLayout } from "@/components/console/console-layout";
+
+export default function DashboardGroupLayout({ children }: { children: ReactNode }) {
+  return <ConsoleLayout>{children}</ConsoleLayout>;
 }

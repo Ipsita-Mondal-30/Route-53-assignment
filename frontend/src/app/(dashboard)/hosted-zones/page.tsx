@@ -1,3 +1,5 @@
+import { HostedZonesView } from "@/components/console/hosted-zones-view";
+
 export default function HostedZonesPage() {
-  return <h1>Hosted Zones</h1>;
+  return <HostedZonesView />;
 }

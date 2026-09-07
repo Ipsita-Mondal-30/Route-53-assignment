@@ -145,3 +145,196 @@ section[id] {
 .aws-btn-secondary:hover {
   background: #f2f3f3;
 }
+
+/* AWS Management Console (dark) — scoped so marketing/auth pages are unchanged */
+.console-mode,
+.console-mode body {
+  background: #161d27;
+  color: #d1d5db;
+}
+
+.aws-console {
+  --c-bg: #161d27;
+  --c-bg-elevated: #191d28;
+  --c-bg-input: #0f141a;
+  --c-bg-search: #0e1319;
+  --c-bg-table: #121921;
+  --c-bg-hover: #1c2430;
+  --c-bg-active: #1a2838;
+  --c-border: #3d4654;
+  --c-border-subtle: #2a313c;
+  --c-border-input: #7d8998;
+  --c-text: #d1d5db;
+  --c-text-heading: #eaeded;
+  --c-text-muted: #8d99a6;
+  --c-link: #42b4ff;
+  --c-link-hover: #7ec5f5;
+  --c-button: #539fe5;
+  --c-focus: #42b4ff;
+  --c-danger: #eb6f6f;
+  --nav-h: 40px;
+  --crumb-h: 40px;
+  --footer-h: 36px;
+  --sidebar-w: 240px;
+  color: var(--c-text);
+  background: var(--c-bg);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.aws-console main a {
+  color: var(--c-link);
+  text-decoration: none;
+}
+
+.aws-console main a:hover {
+  color: var(--c-link-hover);
+  text-decoration: underline;
+}
+
+.aws-console a.console-btn,
+.aws-console a.console-btn:hover {
+  text-decoration: none;
+}
+
+.aws-console :focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.console-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none !important;
+  transition: background-color 80ms ease, border-color 80ms ease;
+}
+
+.console-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.console-btn-normal {
+  background: transparent;
+  border: 2px solid var(--c-button);
+  color: #fff !important;
+}
+
+.console-btn-normal:hover:not(:disabled) {
+  background: rgba(83, 159, 229, 0.12);
+  color: #fff !important;
+}
+
+.console-btn-primary {
+  background: var(--c-button);
+  border: 2px solid var(--c-button);
+  color: #0f141a !important;
+}
+
+.console-btn-primary:hover:not(:disabled) {
+  background: #6bb0ea;
+  border-color: #6bb0ea;
+  color: #0f141a !important;
+}
+
+.console-btn-link {
+  background: transparent;
+  border: 2px solid transparent;
+  color: var(--c-link);
+  font-weight: 700;
+  padding-inline: 8px;
+}
+
+.console-btn-link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.console-input {
+  height: 32px;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--c-border-input);
+  background: var(--c-bg-input);
+  color: var(--c-text-heading);
+  padding: 4px 10px;
+  font-size: 14px;
+  outline: none;
+}
+
+.console-input::placeholder {
+  color: var(--c-text-muted);
+}
+
+.console-input:focus {
+  border-color: var(--c-focus);
+  box-shadow: 0 0 0 1px var(--c-focus);
+}
+
+select.console-input {
+  color-scheme: dark;
+}
+
+select.console-input option {
+  background: #161d27;
+  color: #d1d5db;
+}
+
+.console-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.console-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.console-table th {
+  text-align: left;
+  font-weight: 700;
+  color: var(--c-text-heading);
+  background: var(--c-bg-table);
+  border-bottom: 1px solid var(--c-border);
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+
+.console-table td {
+  border-bottom: 1px solid var(--c-border-subtle);
+  padding: 8px 12px;
+  color: var(--c-text);
+  vertical-align: middle;
+}
+
+.console-table tbody tr[data-clickable="true"] {
+  cursor: pointer;
+}
+
+.console-table tbody tr[data-clickable="true"]:hover td {
+  background: var(--c-bg-hover);
+}
+
+.aws-console ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.aws-console ::-webkit-scrollbar-track {
+  background: var(--c-bg);
+}
+
+.aws-console ::-webkit-scrollbar-thumb {
+  background: #3d4654;
+  border-radius: 8px;
+}

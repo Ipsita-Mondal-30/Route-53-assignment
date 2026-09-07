@@ -53,7 +53,7 @@ export function AwsNavbar() {
             Search
           </a>
           <Link
-            href="/signin"
+            href="/dashboard"
             className="aws-focus hidden text-[15px] font-medium whitespace-nowrap text-aws-ink hover:underline md:inline"
           >
             Sign in to console
@@ -103,7 +103,7 @@ export function AwsNavbar() {
             <a href="#" className="aws-focus py-1 text-[15px] font-medium text-aws-ink">
               Search
             </a>
-            <Link href="/signin" className="aws-focus py-1 text-[15px] font-medium text-aws-ink">
+            <Link href="/dashboard" className="aws-focus py-1 text-[15px] font-medium text-aws-ink">
               Sign in to console
             </Link>
             <Link href="/signup" className="aws-focus py-1 text-[15px] font-medium text-aws-ink">

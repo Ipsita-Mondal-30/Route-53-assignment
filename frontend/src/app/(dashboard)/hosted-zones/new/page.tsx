@@ -1,3 +1,5 @@
+import { CreateHostedZoneView } from "@/components/console/create-hosted-zone-view";
+
 export default function NewHostedZonePage() {
-  return <h1>New Hosted Zone</h1>;
+  return <CreateHostedZoneView />;
 }

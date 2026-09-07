@@ -1,3 +1,5 @@
+import { PlaceholderPage } from "@/components/console/placeholder-page";
+
 export default function ResolverPage() {
-  return <h1>Resolver</h1>;
+  return <PlaceholderPage title="Resolver" />;
 }
