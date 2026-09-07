@@ -155,18 +155,22 @@ section[id] {
 
 .aws-console {
   --c-bg: #161d27;
+  --c-bg-card: #161d27;
   --c-bg-elevated: #191d28;
   --c-bg-input: #0f141a;
   --c-bg-search: #232f3e;
   --c-bg-table: #121921;
   --c-bg-hover: #1c2430;
   --c-bg-active: #1a2838;
+  --c-bg-breadcrumb: #232f3e;
+  --c-bg-footer: #16191f;
   --c-border: #414d5c;
   --c-border-subtle: #2a313c;
   --c-border-input: #7d8998;
   --c-text: #d1d5db;
   --c-text-heading: #eaeded;
   --c-text-muted: #8d99a6;
+  --c-text-secondary: #aab7b8;
   --c-link: #42b4ff;
   --c-link-hover: #7ec5f5;
   --c-button: #539fe5;
@@ -662,8 +666,30 @@ select.console-input option {
   justify-content: center;
 }
 
-.hz-type-card[data-selected="true"] .hz-radio {
+.hz-radio[data-checked="true"] {
   border-color: #42b4ff;
+}
+
+.hz-zones-table tbody tr {
+  position: relative;
+}
+
+.hz-zones-table tbody tr[data-selected="true"] td {
+  background: rgba(15, 35, 55, 0.9);
+  border-top: 2px solid #42b4ff;
+  border-bottom: 2px solid #42b4ff;
+}
+
+.hz-zones-table tbody tr[data-selected="true"] td:first-child {
+  border-left: 2px solid #42b4ff;
+}
+
+.hz-zones-table tbody tr[data-selected="true"] td:last-child {
+  border-right: 2px solid #42b4ff;
+}
+
+.hz-zones-table tbody tr[data-selected="true"]:hover td {
+  background: rgba(66, 180, 255, 0.1);
 }
 
 .hz-radio-dot {
@@ -813,42 +839,34 @@ html[data-theme="light"] .hz-skeleton {
 
 html[data-theme="light"].console-mode,
 html[data-theme="light"].console-mode body {
-  background: #ffffff;
+  background: #f2f3f3;
   color: #16191f;
 }
 
 html[data-theme="light"] .aws-console {
-  --c-bg: #ffffff;
-  --c-bg-elevated: #f2f3f3;
+  --c-bg: #f2f3f3;
+  --c-bg-card: #ffffff;
+  --c-bg-elevated: #ffffff;
   --c-bg-input: #ffffff;
-  --c-bg-search: #f2f3f3;
+  --c-bg-search: #ffffff;
   --c-bg-table: #ffffff;
   --c-bg-hover: #f2f3f3;
   --c-bg-active: #f1faff;
+  --c-bg-breadcrumb: #ffffff;
+  --c-bg-footer: #f2f3f3;
   --c-border: #d5dbdb;
   --c-border-subtle: #e9ebed;
   --c-border-input: #7d8998;
   --c-text: #16191f;
   --c-text-heading: #16191f;
   --c-text-muted: #545b64;
+  --c-text-secondary: #545b64;
   --c-link: #0073bb;
   --c-link-hover: #00a1c9;
   --c-button: #0972d3;
   --c-focus: #0972d3;
-  background: #ffffff;
+  background: #f2f3f3;
   color: #16191f;
-}
-
-html[data-theme="light"] .aws-console header.sticky {
-  background: #ffffff !important;
-  border-bottom-color: #d5dbdb !important;
-  color: #16191f !important;
-}
-
-html[data-theme="light"] .aws-console header.sticky button,
-html[data-theme="light"] .aws-console header.sticky a,
-html[data-theme="light"] .aws-console header.sticky span {
-  color: inherit;
 }
 
 html[data-theme="light"] .aws-console header.sticky .region-picker-popover,
@@ -875,37 +893,138 @@ html[data-theme="light"] .aws-console header.sticky .region-picker-popover .regi
   color: #42b4ff;
 }
 
-html[data-theme="light"] .aws-console header.sticky input {
+html[data-theme="light"] .aws-console .service-breadcrumb {
   background: #ffffff;
-  color: #16191f;
-  border-color: #7d8998;
+  border-bottom-color: #d5dbdb;
 }
 
-html[data-theme="light"] .aws-console .sticky.top-\[var\(--nav-h\)\] {
-  background: #f2f3f3 !important;
-  border-bottom-color: #d5dbdb !important;
-}
-
-html[data-theme="light"] .aws-console aside {
+html[data-theme="light"] .aws-console .console-nav-sidebar,
+html[data-theme="light"] .aws-console main aside,
+html[data-theme="light"] .aws-console .rd-panel {
   background: #ffffff;
   border-color: #d5dbdb;
   color: #16191f;
 }
 
 html[data-theme="light"] .aws-console footer {
-  background: #f2f3f3 !important;
-  border-top-color: #d5dbdb !important;
+  background: #f2f3f3;
+  border-top-color: #d5dbdb;
+  color: #545b64;
+}
+
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar) .text-white,
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar) h1,
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar) h2,
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar) h3,
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar) .text-\[\#eaeded\] {
+  color: #16191f !important;
+}
+
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar) .text-\[\#d5dbdb\],
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar) .text-\[\#d5dbdb\]\!,
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar) .text-\[\#d1d5db\],
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar, footer, .service-breadcrumb) .text-\[\#aab7b8\],
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar, footer) .text-\[\#8d99a6\],
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar, footer) .text-\[\#87919c\],
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar, footer) .text-\[\#9aa0a9\],
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar, footer) .text-\[\#9ba3af\] {
   color: #545b64 !important;
 }
 
-html[data-theme="light"] .aws-console main .text-white,
-html[data-theme="light"] .aws-console main h1,
-html[data-theme="light"] .aws-console main h2 {
+html[data-theme="light"] .aws-console main .bg-\[\#1d8102\].text-white,
+html[data-theme="light"] .aws-console main .bg-\[\#0972d3\].text-white,
+html[data-theme="light"] .aws-console main [class*="bg-[#1d8102]"] .text-white,
+html[data-theme="light"] .aws-console main .rounded-full.bg-\[\#1d8102\] {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .aws-console main .bg-\[\#1a472a\] {
+  background: #f2f8f3;
+  color: #16191f;
+}
+
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar, .service-breadcrumb) .text-\[\#42b4ff\],
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar, .service-breadcrumb) .text-\[\#42b4ff\]\!,
+html[data-theme="light"] .aws-console main .text-\[\#539fe5\] {
+  color: #0073bb !important;
+}
+
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar, .service-breadcrumb) .hover\:text-\[\#6ec4ff\]:hover,
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar, .service-breadcrumb) .hover\:text-\[\#6ec4ff\]\!:hover,
+html[data-theme="light"] .aws-console main .hover\:text-\[\#7ec8ff\]:hover {
+  color: #00a1c9 !important;
+}
+
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar) .hover\:text-white:hover,
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar, footer) .hover\:text-\[\#eaeded\]:hover,
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar, footer) .hover\:text-\[\#eaeded\]\!:hover {
   color: #16191f !important;
 }
 
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar) .bg-\[\#161d27\],
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar) .bg-\[\#161d26\],
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar) .bg-\[\#0f141a\] {
+  background-color: #ffffff;
+}
+
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar) .hover\:bg-\[\#1c2430\]:hover,
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar) .hover\:bg-white\/5:hover {
+  background-color: #f2f3f3;
+}
+
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar, .service-breadcrumb, footer) .border-\[\#414d5c\],
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar, .service-breadcrumb, footer) .border-\[\#2a313c\],
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar, .service-breadcrumb, footer) .border-\[\#232b37\],
+html[data-theme="light"] .aws-console :is(main, .console-nav-sidebar) .border-\[\#687078\] {
+  border-color: #d5dbdb;
+}
+
 html[data-theme="light"] .aws-console .console-btn-normal {
+  background: #ffffff;
+  border-color: #0073bb;
+  color: #0073bb !important;
+}
+
+html[data-theme="light"] .aws-console .console-btn-normal:hover:not(:disabled) {
+  background: rgba(0, 115, 187, 0.08);
+  color: #0073bb !important;
+}
+
+html[data-theme="light"] .aws-console .console-btn-primary {
+  background: #0972d3;
+  border-color: #0972d3;
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .aws-console .console-btn-primary:hover:not(:disabled) {
+  background: #033160;
+  border-color: #033160;
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .aws-console .console-btn-secondary {
+  background: #ffffff;
+  border-color: #7d8998;
   color: #16191f !important;
+}
+
+html[data-theme="light"] .aws-console .console-btn-secondary:hover:not(:disabled) {
+  background: #f2f3f3;
+  color: #16191f !important;
+}
+
+html[data-theme="light"] .aws-console .console-btn-secondary:disabled {
+  border-color: #d5dbdb;
+  color: #879196 !important;
+}
+
+html[data-theme="light"] .aws-console .hz-refresh-btn {
+  border-color: #0073bb;
+  color: #0073bb;
+}
+
+html[data-theme="light"] .aws-console .hz-refresh-btn:hover {
+  background: rgba(0, 115, 187, 0.08);
 }
 
 html[data-theme="light"] .aws-console .hz-filter-input,
@@ -915,10 +1034,51 @@ html[data-theme="light"] .aws-console .console-input {
   border-color: #7d8998;
 }
 
-html[data-theme="light"] .aws-console .hz-table thead th,
+html[data-theme="light"] .aws-console select.console-input {
+  color-scheme: light;
+}
+
+html[data-theme="light"] .aws-console select.console-input option {
+  background: #ffffff;
+  color: #16191f;
+}
+
+html[data-theme="light"] .aws-console .hz-table thead th {
+  color: #16191f;
+  border-top-color: #d5dbdb;
+  border-bottom-color: #d5dbdb;
+}
+
+html[data-theme="light"] .aws-console .hz-table thead th + th::before {
+  background: #d5dbdb;
+}
+
 html[data-theme="light"] .aws-console .hz-table tbody td {
   color: #16191f;
-  border-color: #d5dbdb;
+  border-bottom-color: #e9ebed;
+}
+
+html[data-theme="light"] .aws-console .hz-sort-icon {
+  color: #687078;
+}
+
+html[data-theme="light"] .aws-console .hz-table tbody tr[data-selected="true"] td,
+html[data-theme="light"] .aws-console .hz-records-table tbody tr[data-selected="true"] td {
+  background: #f1faff;
+}
+
+html[data-theme="light"] .aws-console .hz-records-table tbody tr[data-selected="true"] td,
+html[data-theme="light"] .aws-console .hz-zones-table tbody tr[data-selected="true"] td {
+  border-color: #0073bb;
+}
+
+html[data-theme="light"] .aws-console .hz-table tbody tr[data-selected="true"]:hover td,
+html[data-theme="light"] .aws-console .hz-records-table tbody tr[data-selected="true"]:hover td {
+  background: #e8f4fc;
+}
+
+html[data-theme="light"] .aws-console .hz-tabs .hz-tab-active {
+  border-bottom-color: #0073bb;
 }
 
 html[data-theme="light"] .aws-console .hz-btn-grey {
@@ -927,10 +1087,94 @@ html[data-theme="light"] .aws-console .hz-btn-grey {
   color: #16191f;
 }
 
+html[data-theme="light"] .aws-console .hz-btn-grey:hover:not(:disabled) {
+  background: #d5dbdb;
+}
+
+html[data-theme="light"] .aws-console .hz-form-card,
+html[data-theme="light"] .aws-console .hz-type-card {
+  background: #ffffff;
+  border-color: #d5dbdb;
+}
+
+html[data-theme="light"] .aws-console .hz-type-card[data-selected="true"] {
+  background: #f1faff;
+  border-color: #0073bb;
+}
+
+html[data-theme="light"] .aws-console .hz-type-card:hover {
+  border-color: #7d8998;
+}
+
+html[data-theme="light"] .aws-console .hz-radio {
+  border-color: #7d8998;
+}
+
+html[data-theme="light"] .aws-console .hz-type-card[data-selected="true"] .hz-radio,
+html[data-theme="light"] .aws-console .hz-radio[data-checked="true"],
+html[data-theme="light"] .aws-console .hz-radio-dot {
+  border-color: #0073bb;
+}
+
+html[data-theme="light"] .aws-console .hz-radio-dot {
+  background: #0073bb;
+}
+
+html[data-theme="light"] .aws-console .hz-add-tag-btn {
+  border-color: #0073bb;
+  color: #16191f;
+}
+
+html[data-theme="light"] .aws-console .hz-add-tag-btn:hover:not(:disabled) {
+  background: rgba(0, 115, 187, 0.08);
+}
+
+html[data-theme="light"] .aws-console .rd-copy-btn {
+  color: #0073bb;
+}
+
+html[data-theme="light"] .aws-console .rd-copy-btn:hover {
+  color: #00a1c9;
+}
+
+html[data-theme="light"] .aws-console .rd-ttl-chip {
+  border-color: #7d8998;
+  color: #16191f;
+}
+
+html[data-theme="light"] .aws-console .rd-ttl-chip:hover {
+  background: #f2f3f3;
+  border-color: #545b64;
+}
+
+html[data-theme="light"] .aws-console .rd-toggle[data-on="true"] {
+  background: #0972d3;
+}
+
 html[data-theme="light"] .aws-console .rd-collapsed-bar,
 html[data-theme="light"] .aws-console .rd-panel {
   background: #ffffff;
   border-color: #d5dbdb;
+}
+
+html[data-theme="light"] .aws-console .sidebar-scroll {
+  scrollbar-color: #d5dbdb transparent;
+}
+
+html[data-theme="light"] .aws-console .sidebar-scroll::-webkit-scrollbar-thumb {
+  background: #d5dbdb;
+}
+
+html[data-theme="light"] .aws-console .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: #aab7b8;
+}
+
+html[data-theme="light"] .aws-console ::-webkit-scrollbar-track {
+  background: #f2f3f3;
+}
+
+html[data-theme="light"] .aws-console ::-webkit-scrollbar-thumb {
+  background: #d5dbdb;
 }
 
 html[data-theme="light"] .user-settings-popover {
@@ -939,13 +1183,32 @@ html[data-theme="light"] .user-settings-popover {
 }
 
 html[data-theme="light"] .user-settings-popover h2,
-html[data-theme="light"] .user-settings-popover .text-white {
+html[data-theme="light"] .user-settings-popover .text-white,
+html[data-theme="light"] .user-settings-popover .text-\[\#d5dbdb\],
+html[data-theme="light"] .user-settings-popover .text-\[\#aab7b8\] {
   color: #16191f !important;
+}
+
+html[data-theme="light"] .user-settings-popover .text-\[\#aab7b8\] {
+  color: #545b64 !important;
 }
 
 html[data-theme="light"] .user-settings-popover button.flex.h-8 {
   background: #ffffff;
   color: #16191f;
+}
+
+html[data-theme="light"] .user-settings-popover .bg-\[\#0f141a\],
+html[data-theme="light"] .user-settings-popover .bg-\[\#161d26\] {
+  background-color: #ffffff;
+}
+
+html[data-theme="light"] .user-settings-popover .bg-\[\#1a2838\] {
+  background-color: #f1faff;
+}
+
+html[data-theme="light"] .user-settings-popover .hover\:bg-\[\#1c2430\]:hover {
+  background-color: #f2f3f3;
 }
 
 /* Keyboard shortcuts help modal */

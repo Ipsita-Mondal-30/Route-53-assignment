@@ -154,63 +154,63 @@ export function HostedZoneInfoPanel({ topic, onClose }: Props) {
 
   return (
     <aside
-      className="flex h-full min-h-0 w-full flex-col border-l border-[#414d5c] bg-[#161d27] lg:w-[360px] xl:w-[400px]"
+      className="flex h-full min-h-0 w-full flex-col border-l border-[color:var(--c-border)] bg-[var(--c-bg-card)] lg:w-[360px] xl:w-[400px]"
       aria-label={`${content.title} information`}
     >
-      <div className="flex items-center justify-between gap-3 border-b border-[#2a313c] px-5 py-4">
-        <h2 className="text-[18px] leading-6 font-bold text-white">{content.title}</h2>
+      <div className="flex items-center justify-between gap-3 border-b border-[color:var(--c-border-subtle)] px-5 py-4">
+        <h2 className="text-[18px] leading-6 font-bold text-[var(--c-text-heading)]">{content.title}</h2>
         <button
           type="button"
           aria-label="Close info panel"
           onClick={onClose}
-          className="inline-flex h-8 w-8 items-center justify-center text-[#aab7b8] hover:text-white"
+          className="inline-flex h-8 w-8 items-center justify-center text-[var(--c-text-muted)] hover:text-[var(--c-text-heading)]"
         >
           <ChevronRight className="h-5 w-5" strokeWidth={2.25} />
         </button>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-        <p className="text-[14px] leading-[22px] text-[#d1d5db]">{content.intro}</p>
+        <p className="text-[14px] leading-[22px] text-[var(--c-text-muted)]">{content.intro}</p>
 
-        <ul className="mt-4 list-disc space-y-3 pl-5 text-[14px] leading-[22px] text-[#d1d5db]">
+        <ul className="mt-4 list-disc space-y-3 pl-5 text-[14px] leading-[22px] text-[var(--c-text-muted)]">
           {content.bullets.map((bullet, index) => (
             <li key={index}>{bullet}</li>
           ))}
         </ul>
 
-        <div className="mt-6 border-t border-[#2a313c] pt-5">
-          <p className="text-[14px] leading-5 font-bold text-white">
+        <div className="mt-6 border-t border-[color:var(--c-border-subtle)] pt-5">
+          <p className="text-[14px] leading-5 font-bold text-[var(--c-text-heading)]">
             Was this content helpful?
           </p>
           <div className="mt-3 flex flex-wrap gap-3">
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-full border-2 border-[#539fe5] px-4 py-1.5 text-[14px] font-bold text-white hover:bg-[rgba(83,159,229,0.14)]"
+              className="inline-flex items-center gap-2 rounded-full border-2 border-[color:var(--c-link)] px-4 py-1.5 text-[14px] font-bold text-[var(--c-text-heading)] hover:bg-[color-mix(in_srgb,var(--c-link)_14%,transparent)]"
             >
-              <ThumbsUp className="h-4 w-4 text-[#42b4ff]" strokeWidth={2.25} />
+              <ThumbsUp className="h-4 w-4 text-[var(--c-link)]" strokeWidth={2.25} />
               Yes
             </button>
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-full border-2 border-[#539fe5] px-4 py-1.5 text-[14px] font-bold text-white hover:bg-[rgba(83,159,229,0.14)]"
+              className="inline-flex items-center gap-2 rounded-full border-2 border-[color:var(--c-link)] px-4 py-1.5 text-[14px] font-bold text-[var(--c-text-heading)] hover:bg-[color-mix(in_srgb,var(--c-link)_14%,transparent)]"
             >
-              <ThumbsDown className="h-4 w-4 text-[#42b4ff]" strokeWidth={2.25} />
+              <ThumbsDown className="h-4 w-4 text-[var(--c-link)]" strokeWidth={2.25} />
               No
             </button>
           </div>
         </div>
 
-        <div className="mt-6 border-t border-[#2a313c] pt-5 pb-4">
+        <div className="mt-6 border-t border-[color:var(--c-border-subtle)] pt-5 pb-4">
           <div className="mb-3 flex items-center gap-1.5">
-            <h3 className="text-[14px] leading-5 font-bold text-white">Learn more</h3>
-            <ExternalLink className="h-3.5 w-3.5 text-white" strokeWidth={2.25} />
+            <h3 className="text-[14px] leading-5 font-bold text-[var(--c-text-heading)]">Learn more</h3>
+            <ExternalLink className="h-3.5 w-3.5 text-[var(--c-text-heading)]" strokeWidth={2.25} />
           </div>
           <ul className="space-y-2">
             {content.learnMore.map((item) => (
               <li key={item.label}>
                 <a
                   href={item.href}
-                  className="text-[14px] font-bold text-[#42b4ff] hover:underline"
+                  className="text-[14px] font-bold text-[var(--c-link)] hover:underline"
                 >
                   {item.label}
                 </a>
@@ -234,7 +234,7 @@ export function InfoLink({
     <button
       type="button"
       onClick={onClick}
-      className="text-[14px] font-bold text-[#42b4ff] hover:underline"
+      className="text-[14px] font-bold text-[var(--c-link)] hover:underline"
     >
       {children}
     </button>

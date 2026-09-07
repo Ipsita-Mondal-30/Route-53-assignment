@@ -16,16 +16,16 @@ const COLUMNS = [
 type Props = {
   zones: HostedZone[];
   recordCount: (zoneId: string) => number;
-  selectedIds: Set<string>;
-  onToggle: (zoneId: string) => void;
+  selectedId: string | null;
+  onSelect: (zoneId: string) => void;
   onOpen: (zoneId: string) => void;
 };
 
 function ColumnLabel({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center gap-1 text-[14px] leading-5 font-bold text-white">
+    <span className="inline-flex items-center gap-1 text-[14px] leading-5 font-bold text-[var(--c-text-heading)]">
       {label}
-      <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[#aab7b8]" strokeWidth={2.5} />
+      <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[var(--c-text-muted)]" strokeWidth={2.5} />
     </span>
   );
 }
@@ -33,13 +33,13 @@ function ColumnLabel({ label }: { label: string }) {
 export function HostedZoneTable({
   zones,
   recordCount,
-  selectedIds,
-  onToggle,
+  selectedId,
+  onSelect,
   onOpen,
 }: Props) {
   return (
     <div className="console-table-wrap" data-shortcut-table="true">
-      <table className="hz-table">
+      <table className="hz-table hz-zones-table">
         <thead>
           <tr>
             <th className="hz-check-col w-10 !px-3">
@@ -54,34 +54,44 @@ export function HostedZoneTable({
         </thead>
         <tbody>
           {zones.map((zone) => {
-            const selected = selectedIds.has(zone.id);
+            const selected = selectedId === zone.id;
             return (
               <tr
                 key={zone.id}
                 data-clickable="true"
                 data-selected={selected ? "true" : "false"}
-                onClick={() => onOpen(zone.id)}
+                onClick={() => onSelect(zone.id)}
               >
                 <td
                   className="w-10"
                   onClick={(event) => {
                     event.stopPropagation();
-                    onToggle(zone.id);
+                    onSelect(zone.id);
                   }}
                 >
-                  <input
-                    type="checkbox"
-                    checked={selected}
-                    onChange={() => onToggle(zone.id)}
-                    onClick={(event) => event.stopPropagation()}
-                    aria-label={`Select ${zone.name}`}
-                    className="h-3.5 w-3.5 accent-[#42b4ff]"
-                  />
+                  <label className="inline-flex cursor-pointer items-center">
+                    <input
+                      type="radio"
+                      name="hosted-zone-selection"
+                      checked={selected}
+                      onChange={() => onSelect(zone.id)}
+                      onClick={(event) => event.stopPropagation()}
+                      aria-label={`Select ${zone.name}`}
+                      className="sr-only"
+                    />
+                    <span
+                      className="hz-radio mt-0"
+                      data-checked={selected ? "true" : "false"}
+                      aria-hidden="true"
+                    >
+                      {selected ? <span className="hz-radio-dot" /> : null}
+                    </span>
+                  </label>
                 </td>
                 <td>
                   <button
                     type="button"
-                    className="text-left font-bold text-[#42b4ff] hover:underline"
+                    className="text-left font-bold text-[var(--c-link)] hover:underline"
                     onClick={(event) => {
                       event.stopPropagation();
                       onOpen(zone.id);
@@ -109,7 +119,7 @@ export function HostedZoneTable({
 export function HostedZoneTableHeaderOnly() {
   return (
     <div className="console-table-wrap">
-      <table className="hz-table">
+      <table className="hz-table hz-zones-table">
         <thead>
           <tr>
             <th className="hz-check-col w-10 !px-3">

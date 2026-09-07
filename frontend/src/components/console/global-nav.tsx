@@ -4,7 +4,7 @@ import type { ConsoleSession } from "@/lib/auth";
 import { logoutSession } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Settings } from "lucide-react";
 
 import { NotificationNavButton } from "@/components/console/notification-popover";
 import { RegionPickerPopover } from "@/components/console/region-picker-popover";
@@ -16,7 +16,6 @@ import {
   AwsWordmark,
   CaretDownIcon,
   CloudShellIcon,
-  GearIcon,
   GridIcon,
   HelpIcon,
 } from "@/components/console/console-icons";
@@ -33,6 +32,8 @@ export function GlobalNav({
   const router = useRouter();
   const { openHelp } = useKeyboardShortcuts();
   const searchRef = useRef<HTMLInputElement>(null);
+  const [askQHover, setAskQHover] = useState(false);
+  const askQHideTimer = useRef<number | null>(null);
   const [accountOpen, setAccountOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -59,6 +60,34 @@ export function GlobalNav({
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const showAskQ = askQHover || amazonQOpen;
+
+  function revealAskQ() {
+    if (askQHideTimer.current !== null) {
+      window.clearTimeout(askQHideTimer.current);
+      askQHideTimer.current = null;
+    }
+    setAskQHover(true);
+  }
+
+  function concealAskQ() {
+    if (askQHideTimer.current !== null) {
+      window.clearTimeout(askQHideTimer.current);
+    }
+    askQHideTimer.current = window.setTimeout(() => {
+      setAskQHover(false);
+      askQHideTimer.current = null;
+    }, 120);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (askQHideTimer.current !== null) {
+        window.clearTimeout(askQHideTimer.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -99,8 +128,12 @@ export function GlobalNav({
           className={`inline-flex h-12 w-10 shrink-0 items-center justify-center hover:bg-[#232f3e] ${
             amazonQOpen ? "bg-[#232f3e] shadow-[inset_0_0_0_2px_#42b4ff]" : ""
           }`}
-          aria-label="Amazon Q"
+          aria-label="Ask Amazon Q"
           aria-pressed={amazonQOpen}
+          onMouseEnter={revealAskQ}
+          onMouseLeave={concealAskQ}
+          onFocus={revealAskQ}
+          onBlur={concealAskQ}
           onClick={onToggleAmazonQ}
         >
           <AmazonQIcon className="h-6 w-6" />
@@ -125,20 +158,37 @@ export function GlobalNav({
             type="search"
             placeholder="Search"
             data-shortcut-search="nav"
-            className="h-8 w-full rounded-md border border-[#545b64] bg-[#05070a] py-0 pr-[86px] pl-9 text-[14px] leading-5 font-normal text-white outline-none placeholder:italic placeholder:font-normal placeholder:text-[#aab7b8] focus:border-[#42b4ff] focus:shadow-[0_0_0_1px_#42b4ff]"
+            className={`h-8 w-full rounded-md border border-[#545b64] bg-[#05070a] py-0 pl-9 text-[14px] leading-5 font-normal text-white outline-none placeholder:italic placeholder:font-normal placeholder:text-[#aab7b8] focus:border-[#42b4ff] focus:shadow-[0_0_0_1px_#42b4ff] ${
+              showAskQ ? "pr-[232px]" : "pr-[108px]"
+            }`}
           />
-          <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center gap-2">
-            <span className="text-[12px] leading-none font-bold text-[#aab7b8]">
+          <div className="pointer-events-none absolute inset-y-0 right-1.5 flex items-center gap-2">
+            <span className="text-[12px] leading-none font-normal text-[#aab7b8]">
               [Option+S]
             </span>
             <button
               type="button"
-              className="pointer-events-auto inline-flex h-5 w-5 items-center justify-center text-[#d5dbdb] hover:text-white"
+              className={`ask-q-chip pointer-events-auto inline-flex h-[22px] items-center gap-1.5 rounded-full text-[12px] leading-none font-normal text-[#eaeded] transition-[padding,background-color,border-color] duration-150 ${
+                showAskQ
+                  ? "border border-[#d5dbdb] bg-[#232f3e] pr-2.5 pl-1.5"
+                  : "border border-transparent px-0.5"
+              }`}
               aria-label="Ask Amazon Q"
               aria-pressed={amazonQOpen}
+              onMouseEnter={revealAskQ}
+              onMouseLeave={concealAskQ}
+              onFocus={revealAskQ}
+              onBlur={concealAskQ}
               onClick={onToggleAmazonQ}
             >
-              <AmazonQSearchIcon className="h-4 w-4" />
+              <AmazonQSearchIcon className="h-4 w-4 shrink-0" />
+              <span
+                className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-150 ${
+                  showAskQ ? "max-w-[110px] opacity-100" : "max-w-0 opacity-0"
+                }`}
+              >
+                Ask Amazon Q
+              </span>
             </button>
           </div>
         </div>
@@ -194,7 +244,7 @@ export function GlobalNav({
               settingsOpen ? "bg-[#232f3e] text-[#42b4ff]" : "text-white"
             }`}
           >
-            <GearIcon className="h-[18px] w-[18px]" />
+            <Settings className="h-[18px] w-[18px]" strokeWidth={2} />
           </button>
           <UserSettingsPopover
             open={settingsOpen}

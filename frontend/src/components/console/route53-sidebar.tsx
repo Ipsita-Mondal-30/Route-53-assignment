@@ -130,7 +130,7 @@ export function Route53Sidebar({
             onClick={onCloseMobile}
           />
           <aside
-            className="relative flex h-full min-h-0 w-[min(var(--sidebar-w),88vw)] flex-col border-r border-[#232b37] bg-[#161d27] shadow-2xl"
+            className="console-nav-sidebar relative flex h-full min-h-0 w-[min(var(--sidebar-w),88vw)] flex-col border-r border-[color:var(--c-border-subtle)] bg-[var(--c-bg-card)] shadow-2xl"
             aria-label="Route 53"
           >
             <SidebarNav {...navProps} />
@@ -139,7 +139,7 @@ export function Route53Sidebar({
       ) : null}
       {collapsed ? null : (
         <aside
-          className="hidden h-full min-h-0 w-[var(--sidebar-w)] shrink-0 flex-col border-r border-[#232b37] bg-[#161d27] lg:flex"
+          className="console-nav-sidebar hidden h-full min-h-0 w-[var(--sidebar-w)] shrink-0 flex-col border-r border-[color:var(--c-border-subtle)] bg-[var(--c-bg-card)] lg:flex"
           aria-label="Route 53"
         >
           <SidebarNav {...navProps} />
@@ -166,7 +166,7 @@ function SidebarNav({
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex h-11 shrink-0 items-center justify-between px-4">
         <span
-          className="text-[18px] leading-6 font-bold text-white"
+          className="text-[18px] leading-6 font-bold text-[var(--c-text-heading)]"
           style={{ fontFamily: sidebarFont }}
         >
           Route 53
@@ -175,7 +175,7 @@ function SidebarNav({
           <button
             type="button"
             aria-label="Close navigation"
-            className="inline-flex h-8 w-8 items-center justify-center text-[#aab7b8] lg:hidden"
+            className="inline-flex h-8 w-8 items-center justify-center text-[var(--c-text-muted)] lg:hidden"
             onClick={onCloseMobile}
           >
             <CloseIcon className="h-4 w-4" />
@@ -183,7 +183,7 @@ function SidebarNav({
           <button
             type="button"
             aria-label="Collapse navigation"
-            className="hidden h-8 w-8 items-center justify-center text-[#aab7b8] hover:text-[#eaeded] lg:inline-flex"
+            className="hidden h-8 w-8 items-center justify-center text-[var(--c-text-muted)] hover:text-[var(--c-text-heading)] lg:inline-flex"
             onClick={onCollapse}
           >
             <ChevronLeftIcon className="h-3.5 w-3.5" />
@@ -215,14 +215,14 @@ function SidebarNav({
             <div key={section.id} className="mt-2">
               <button
                 type="button"
-                className="flex w-full items-center gap-1.5 px-4 py-1.5 text-left text-[16px] leading-6 font-bold text-white hover:bg-[#1c2430]"
+                className="flex w-full items-center gap-1.5 px-4 py-1.5 text-left text-[16px] leading-6 font-bold text-[var(--c-text-heading)] hover:bg-[var(--c-bg-hover)]"
                 aria-expanded={openSection}
                 onClick={() => onToggleSection(section.id)}
               >
                 {openSection ? (
-                  <CaretDownIcon className="h-2 w-2 shrink-0 text-white" />
+                  <CaretDownIcon className="h-2 w-2 shrink-0 text-[var(--c-text-heading)]" />
                 ) : (
-                  <CaretRightIcon className="h-2 w-2 shrink-0 text-white" />
+                  <CaretRightIcon className="h-2 w-2 shrink-0 text-[var(--c-text-heading)]" />
                 )}
                 <span>{section.label}</span>
               </button>
@@ -247,15 +247,15 @@ function SidebarNav({
           );
         })}
 
-        <div className="mx-3 mt-3 border-t border-[#2a313c] pt-2">
+        <div className="mx-3 mt-3 border-t border-[color:var(--c-border-subtle)] pt-2">
           {externalLinks.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className="flex items-center gap-1.5 px-1 py-[5px] text-[14px] leading-5 font-normal text-[#d5dbdb]! hover:bg-[#1c2430] hover:text-[#eaeded]! hover:no-underline"
+              className="flex items-center gap-1.5 px-1 py-[5px] text-[14px] leading-5 font-normal text-[var(--c-text)]! hover:bg-[var(--c-bg-hover)] hover:text-[var(--c-text-heading)]! hover:no-underline"
             >
               <span>{link.label}</span>
-              <ExternalLinkIcon className="h-3 w-3 shrink-0 text-[#9aa0a9]" />
+              <ExternalLinkIcon className="h-3 w-3 shrink-0 text-[var(--c-text-muted)]" />
             </a>
           ))}
         </div>
@@ -288,13 +288,13 @@ function SidebarLink({
         indented ? "pr-4 pl-8" : "px-4"
       } ${
         active
-          ? "text-[#42b4ff]! hover:text-[#42b4ff]!"
-          : "text-[#d5dbdb]! hover:bg-[#1c2430] hover:text-[#eaeded]!"
+          ? "text-[var(--c-link)]! hover:text-[var(--c-link)]!"
+          : "text-[var(--c-text)]! hover:bg-[var(--c-bg-hover)] hover:text-[var(--c-text-heading)]!"
       }`}
     >
       <span className="truncate">{children}</span>
       {badge ? (
-        <span className="shrink-0 text-[12px] font-normal text-[#42b4ff] underline decoration-dotted decoration-[#42b4ff] underline-offset-[3px]">
+        <span className="shrink-0 text-[12px] font-normal text-[var(--c-link)] underline decoration-dotted decoration-[var(--c-link)] underline-offset-[3px]">
           {badge}
         </span>
       ) : null}

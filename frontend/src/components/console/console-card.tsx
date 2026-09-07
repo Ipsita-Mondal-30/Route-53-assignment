@@ -11,7 +11,7 @@ export function ConsoleCard({
 }) {
   return (
     <section
-      className={`overflow-hidden rounded-[16px] border border-[#414d5c] bg-[#161d27] ${
+      className={`overflow-hidden rounded-[16px] border border-[color:var(--c-border)] bg-[var(--c-bg-card)] ${
         padding ? "p-5" : ""
       } ${className ?? ""}`}
     >

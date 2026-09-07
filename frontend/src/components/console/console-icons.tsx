@@ -160,20 +160,6 @@ export function HelpIcon(props: IconProps) {
   );
 }
 
-export function GearIcon(props: IconProps) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M8.15 1.75h3.7l.4 2.05c.55.15 1.06.4 1.5.7l1.9-.8 1.85 1.85-.8 1.9c.3.44.55.95.7 1.5l2.05.4v3.7l-2.05.4c-.15.55-.4 1.06-.7 1.5l.8 1.9-1.85 1.85-1.9-.8c-.44.3-.95.55-1.5.7l-.4 2.05h-3.7l-.4-2.05a5.9 5.9 0 0 1-1.5-.7l-1.9.8-1.85-1.85.8-1.9a5.9 5.9 0 0 1-.7-1.5l-2.05-.4v-3.7l2.05-.4c.15-.55.4-1.06.7-1.5l-.8-1.9L6.65 3.7l1.9.8c.44-.3.95-.55 1.5-.7l.4-2.05Z"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-      <circle cx="10" cy="10" r="2.6" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
 export function ChevronDownIcon(props: IconProps) {
   return (
     <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" {...props}>
