@@ -2,21 +2,26 @@
 
 from __future__ import annotations
 
-from collections.abc import Generator
-from pathlib import Path
+import os
 
-import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, event
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session, sessionmaker
+# Keep the suite fast — do not insert sample zones/records on every TestClient boot.
+os.environ.setdefault("SEED_SAMPLE_DNS", "0")
+
+from collections.abc import Generator  # noqa: E402
+from pathlib import Path  # noqa: E402
+
+import pytest  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+from sqlalchemy import create_engine, event  # noqa: E402
+from sqlalchemy.engine import Engine  # noqa: E402
+from sqlalchemy.orm import Session, sessionmaker  # noqa: E402
 
 # Import models so Base.metadata is fully populated before create_all.
-import app.models  # noqa: F401
-from app.core.config import settings
-from app.core.rate_limit import login_rate_limiter
-from app.db.base import Base
-from app.db.seed import seed_demo_user
+import app.models  # noqa: E402, F401
+from app.core.config import settings  # noqa: E402
+from app.core.rate_limit import login_rate_limiter  # noqa: E402
+from app.db.base import Base  # noqa: E402
+from app.db.seed import seed_demo_user  # noqa: E402
 
 
 @pytest.fixture(scope="session")

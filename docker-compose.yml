@@ -11,10 +11,18 @@ services:
       ENVIRONMENT: dev
       DEMO_USER_EMAIL: demo@example.com
       DEMO_USER_PASSWORD: DemoPass123!
+      SEED_SAMPLE_DNS: "1"
     volumes:
-      - ./backend/data:/app/data
+      # Persist SQLite across container restarts
+      - route53_sqlite:/app/data
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -27,3 +35,6 @@ services:
       NEXT_PUBLIC_API_URL: http://localhost:8000
     depends_on:
       - backend
+
+volumes:
+  route53_sqlite:

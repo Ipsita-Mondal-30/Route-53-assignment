@@ -63,6 +63,11 @@ export function CreateHostedZoneView() {
       tags,
       createdBy: "Route 53",
     });
+    try {
+      sessionStorage.setItem(`route53.zone.created.${zone.id}`, "1");
+    } catch {
+      /* ignore */
+    }
     router.push(`/hosted-zones/${zone.id}`);
   }
 

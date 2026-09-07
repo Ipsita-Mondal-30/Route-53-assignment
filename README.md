@@ -1,26 +1,22 @@
 # Route 53 Clone
 
-## Tech Stack
+AWS Route 53 console clone — Next.js frontend + FastAPI backend (session auth,
+hosted zones, DNS records, SQLite).
 
-Frontend:
-- Next.js
-- TypeScript
-- Tailwind CSS
+## Tech stack
 
-Backend:
-- FastAPI
-- SQLAlchemy
-- Alembic
-- Poetry
-- SQLite
+| Area | Stack |
+|------|--------|
+| Frontend | Next.js, TypeScript, Tailwind CSS |
+| Backend | FastAPI, SQLAlchemy, Alembic, Poetry, SQLite |
 
-## Project Structure
+## Project structure
 
-- `frontend/` — Next.js App Router UI
-- `backend/` — FastAPI API and SQLite persistence
+- `frontend/` — console UI (App Router)
+- `backend/` — REST API (see [`backend/README.md`](backend/README.md))
 - `docs/` — project documentation
 
-## Local Development
+## Local development
 
 ### Backend
 
@@ -28,11 +24,16 @@ Backend:
 cd backend
 cp .env.example .env
 poetry install
+poetry run alembic upgrade head
+poetry run python -m app.db.seed
 poetry run uvicorn app.main:app --reload --port 8000
 ```
 
-The API is available at `http://localhost:8000`.
-Health: `GET /health`
+- API: http://localhost:8000  
+- OpenAPI: http://localhost:8000/docs  
+- Health: `GET /health`
+
+Full backend docs: [`backend/README.md`](backend/README.md).
 
 ### Frontend
 
@@ -43,17 +44,26 @@ npm install
 npm run dev
 ```
 
-The UI is available at `http://localhost:3000`.
+UI: http://localhost:3000
 
-### Docker
+### Docker (full stack)
 
 ```bash
 docker compose up --build
 ```
 
-## Environment Variables
+Backend SQLite is stored in the Docker volume `route53_sqlite` so data survives
+container restarts.
 
-Copy each `.env.example` before running locally. Do not commit `.env` files.
+## Demo login
+
+`demo@example.com` / `DemoPass123!`
+
+The seed script also creates sample hosted zones and DNS records (all 9 types).
+
+## Environment
+
+Copy each `.env.example` before running. Do not commit `.env` files.
 
 Frontend (`frontend/.env.example`):
 
@@ -71,12 +81,4 @@ CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,h
 ENVIRONMENT=dev
 DEMO_USER_EMAIL=demo@example.com
 DEMO_USER_PASSWORD=DemoPass123!
-```
-
-Demo login: `demo@example.com` / `DemoPass123!`
-
-```bash
-cd backend
-poetry run python -m app.db.seed
-poetry run uvicorn app.main:app --reload --port 8000
 ```

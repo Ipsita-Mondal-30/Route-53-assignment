@@ -10,6 +10,7 @@ from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import configure_logging
 from app.core.middleware import RequestIdMiddleware
+from app.core.openapi import API_DESCRIPTION, API_TITLE, API_VERSION, OPENAPI_TAGS
 from app.db.session import engine
 
 logger = getLogger(__name__)
@@ -19,11 +20,11 @@ logger = getLogger(__name__)
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     if settings.environment == "dev":
         try:
-            from app.db.seed import seed_demo_user
+            from app.db.seed import seed_all
 
-            seed_demo_user()
+            seed_all()
         except Exception:
-            logger.exception("Failed to seed demo user on startup")
+            logger.exception("Failed to seed demo data on startup")
     yield
     engine.dispose()
 
@@ -32,8 +33,10 @@ def create_app() -> FastAPI:
     configure_logging(settings)
 
     application = FastAPI(
-        title="Route 53 Clone API",
-        version="0.1.0",
+        title=API_TITLE,
+        description=API_DESCRIPTION,
+        version=API_VERSION,
+        openapi_tags=OPENAPI_TAGS,
         lifespan=lifespan,
         docs_url="/docs" if settings.environment == "dev" else None,
         redoc_url="/redoc" if settings.environment == "dev" else None,

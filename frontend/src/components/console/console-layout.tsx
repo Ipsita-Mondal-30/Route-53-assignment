@@ -15,9 +15,9 @@ import {
   fetchCurrentUser,
   type ConsoleSession,
 } from "@/lib/auth";
-import { Route53StoreProvider } from "@/lib/mock/store";
+import { Route53StoreProvider, useRoute53Store } from "@/lib/mock/store";
 
-function crumbsForPath(pathname: string): BreadcrumbCrumb[] {
+function crumbsForPath(pathname: string, zoneName?: string): BreadcrumbCrumb[] {
   if (pathname === "/hosted-zones/new") {
     return [
       { label: "Hosted zones", href: "/hosted-zones" },
@@ -27,7 +27,7 @@ function crumbsForPath(pathname: string): BreadcrumbCrumb[] {
   if (pathname.startsWith("/hosted-zones/") && pathname !== "/hosted-zones/new") {
     return [
       { label: "Hosted zones", href: "/hosted-zones" },
-      { label: "Hosted zone details" },
+      { label: zoneName || "Hosted zone details" },
     ];
   }
   if (pathname === "/hosted-zones") {
@@ -51,13 +51,19 @@ function crumbsForPath(pathname: string): BreadcrumbCrumb[] {
   return [{ label: "Dashboard" }];
 }
 
+function zoneIdFromPath(pathname: string): string | null {
+  if (!pathname.startsWith("/hosted-zones/") || pathname === "/hosted-zones/new") {
+    return null;
+  }
+  const parts = pathname.split("/");
+  return parts[2] || null;
+}
+
 export function ConsoleLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [session, setSession] = useState<ConsoleSession>(DEMO_CONSOLE_SESSION);
   const [authReady, setAuthReady] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.add("console-mode");
@@ -84,6 +90,33 @@ export function ConsoleLayout({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
+  if (!authReady) {
+    return (
+      <div className="aws-console flex h-dvh items-center justify-center bg-[#161d27] text-[14px] text-[#aab7b8]">
+        Checking session…
+      </div>
+    );
+  }
+
+  return (
+    <Route53StoreProvider>
+      <ConsoleShell session={session}>{children}</ConsoleShell>
+    </Route53StoreProvider>
+  );
+}
+
+function ConsoleShell({
+  session,
+  children,
+}: {
+  session: ConsoleSession;
+  children: ReactNode;
+}) {
+  const pathname = usePathname();
+  const { getZone } = useRoute53Store();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
@@ -98,7 +131,12 @@ export function ConsoleLayout({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const crumbs = useMemo(() => crumbsForPath(pathname), [pathname]);
+  const zoneId = zoneIdFromPath(pathname);
+  const zoneName = zoneId ? getZone(zoneId)?.name : undefined;
+  const crumbs = useMemo(
+    () => crumbsForPath(pathname, zoneName),
+    [pathname, zoneName],
+  );
 
   function toggleSidebar() {
     if (window.matchMedia("(min-width: 1024px)").matches) {
@@ -108,32 +146,22 @@ export function ConsoleLayout({ children }: { children: ReactNode }) {
     }
   }
 
-  if (!authReady) {
-    return (
-      <div className="aws-console flex h-dvh items-center justify-center bg-[#161d27] text-[14px] text-[#aab7b8]">
-        Checking session…
-      </div>
-    );
-  }
-
   return (
-    <Route53StoreProvider>
-      <div className="aws-console flex h-dvh flex-col overflow-hidden">
-        <GlobalNav session={session} />
-        <ServiceBreadcrumb crumbs={crumbs} onToggleSidebar={toggleSidebar} />
-        <div className="flex min-h-0 min-w-0 flex-1">
-          <Route53Sidebar
-            open={mobileOpen}
-            collapsed={collapsed}
-            onCollapse={() => setCollapsed(true)}
-            onCloseMobile={() => setMobileOpen(false)}
-          />
-          <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto px-4 py-5 sm:px-5 lg:px-6">
-            {children}
-          </main>
-        </div>
-        <ConsoleFooter />
+    <div className="aws-console flex h-dvh flex-col overflow-hidden">
+      <GlobalNav session={session} />
+      <ServiceBreadcrumb crumbs={crumbs} onToggleSidebar={toggleSidebar} />
+      <div className="flex min-h-0 min-w-0 flex-1">
+        <Route53Sidebar
+          open={mobileOpen}
+          collapsed={collapsed}
+          onCollapse={() => setCollapsed(true)}
+          onCloseMobile={() => setMobileOpen(false)}
+        />
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto px-4 py-5 sm:px-5 lg:px-6">
+          {children}
+        </main>
       </div>
-    </Route53StoreProvider>
+      <ConsoleFooter />
+    </div>
   );
 }

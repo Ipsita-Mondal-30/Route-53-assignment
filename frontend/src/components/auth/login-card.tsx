@@ -46,9 +46,15 @@ export function LoginCard() {
       const next = searchParams.get("next") || "/hosted-zones";
       router.push(next.startsWith("/") ? next : "/hosted-zones");
     } catch (err) {
-      const detail =
-        err instanceof ApiError ? err.detail : "Unable to sign in. Try again.";
-      setError(detail);
+      if (err instanceof ApiError) {
+        setError(err.detail);
+      } else if (err instanceof TypeError) {
+        setError(
+          "Cannot reach the API at localhost:8000. Start the backend, then try again.",
+        );
+      } else {
+        setError("Unable to sign in. Try again.");
+      }
     } finally {
       setLoading(false);
     }

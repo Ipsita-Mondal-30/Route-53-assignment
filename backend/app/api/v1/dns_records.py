@@ -14,7 +14,7 @@ from app.schemas.dns_record import (
 )
 from app.services import dns_record_service
 
-router = APIRouter(tags=["dns-records"])
+router = APIRouter(tags=["records"])
 
 
 @router.get(
