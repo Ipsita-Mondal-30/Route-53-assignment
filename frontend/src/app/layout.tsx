@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Nunito } from "next/font/google";
+import Script from "next/script";
+
+import { THEME_INIT_SCRIPT } from "@/lib/user-settings-storage";
 
 import "./globals.css";
 
@@ -23,8 +26,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${inter.variable} ${nunito.variable}`}>
-      <body className={inter.className}>{children}</body>
+    <html
+      lang="en"
+      className={`${inter.variable} ${nunito.variable}`}
+      suppressHydrationWarning
+    >
+      <body className={inter.className} suppressHydrationWarning>
+        <Script
+          id="route53-theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

@@ -9,9 +9,15 @@ from app.models.notification import Notification
 from app.models.user import User
 from app.schemas.notification import NotificationCreate, NotificationTab
 
+_schema_ready = False
+
 
 def ensure_schema(db: Session) -> None:
+    global _schema_ready
+    if _schema_ready:
+        return
     Notification.__table__.create(bind=db.get_bind(), checkfirst=True)
+    _schema_ready = True
 
 
 def enqueue_activity(

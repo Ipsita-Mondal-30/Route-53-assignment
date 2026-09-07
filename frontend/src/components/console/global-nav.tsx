@@ -4,14 +4,12 @@ import type { ConsoleSession } from "@/lib/auth";
 import { logoutSession } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
-import {
-  ChevronDown,
-  Search,
-} from "lucide-react";
+import { Search } from "lucide-react";
 
 import { NotificationNavButton } from "@/components/console/notification-popover";
 import { RegionPickerPopover } from "@/components/console/region-picker-popover";
 import { UserSettingsPopover } from "@/components/console/user-settings-popover";
+import { useKeyboardShortcuts } from "@/components/console/keyboard-shortcuts-provider";
 import {
   AmazonQIcon,
   AmazonQSearchIcon,
@@ -33,6 +31,7 @@ export function GlobalNav({
   onToggleAmazonQ?: () => void;
 }) {
   const router = useRouter();
+  const { openHelp } = useKeyboardShortcuts();
   const searchRef = useRef<HTMLInputElement>(null);
   const [accountOpen, setAccountOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -107,8 +106,6 @@ export function GlobalNav({
           <AmazonQIcon className="h-6 w-6" />
         </button>
 
-        <NavDivider />
-
         <button
           type="button"
           className="inline-flex h-12 w-10 shrink-0 items-center justify-center text-white hover:bg-[#232f3e]"
@@ -117,26 +114,34 @@ export function GlobalNav({
           <GridIcon className="h-[18px] w-[18px]" />
         </button>
 
-        <label className="relative mx-2 hidden min-w-0 flex-1 items-center md:flex">
+        <div className="relative mx-2 hidden min-w-0 flex-1 md:block">
           <span className="sr-only">Search</span>
           <Search
-            className="pointer-events-none absolute left-3 z-[1] h-4 w-4 text-[#aab7b8]"
+            className="pointer-events-none absolute top-1/2 left-3 z-[1] h-4 w-4 -translate-y-1/2 text-[#aab7b8]"
             strokeWidth={2.25}
           />
           <input
             ref={searchRef}
             type="search"
             placeholder="Search"
-            className="h-8 w-full max-w-[720px] rounded-md border border-[#545b64] bg-[#05070a] py-0 pr-[210px] pl-9 text-[14px] leading-5 font-normal text-white outline-none placeholder:italic placeholder:font-normal placeholder:text-[#aab7b8] focus:border-[#42b4ff] focus:shadow-[0_0_0_1px_#42b4ff]"
+            data-shortcut-search="nav"
+            className="h-8 w-full rounded-md border border-[#545b64] bg-[#05070a] py-0 pr-[86px] pl-9 text-[14px] leading-5 font-normal text-white outline-none placeholder:italic placeholder:font-normal placeholder:text-[#aab7b8] focus:border-[#42b4ff] focus:shadow-[0_0_0_1px_#42b4ff]"
           />
-          <span className="pointer-events-none absolute top-1/2 right-[138px] -translate-y-1/2 text-[12px] leading-none font-bold text-[#aab7b8]">
-            [Option+S]
-          </span>
-          <span className="pointer-events-none absolute top-1/2 right-2.5 flex -translate-y-1/2 items-center gap-1.5 text-[13px] font-bold text-[#d5dbdb]">
-            <AmazonQSearchIcon className="h-4 w-4" />
-            Ask Amazon Q
-          </span>
-        </label>
+          <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center gap-2">
+            <span className="text-[12px] leading-none font-bold text-[#aab7b8]">
+              [Option+S]
+            </span>
+            <button
+              type="button"
+              className="pointer-events-auto inline-flex h-5 w-5 items-center justify-center text-[#d5dbdb] hover:text-white"
+              aria-label="Ask Amazon Q"
+              aria-pressed={amazonQOpen}
+              onClick={onToggleAmazonQ}
+            >
+              <AmazonQSearchIcon className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="ml-auto flex h-12 shrink-0 items-center">
@@ -168,7 +173,7 @@ export function GlobalNav({
         </div>
         <NavDivider />
 
-        <IconButton label="Help">
+        <IconButton label="Help" ariaHasPopup="dialog" onClick={openHelp}>
           <HelpIcon className="h-[18px] w-[18px]" />
         </IconButton>
         <NavDivider />
@@ -238,18 +243,17 @@ export function GlobalNav({
               setNotificationsOpen(false);
               setRegionOpen(false);
             }}
-            className="mx-1 my-1.5 mr-2 flex h-9 min-w-[190px] flex-col justify-center px-2 text-left hover:bg-[#232f3e]"
+            className={`mx-1 my-1 mr-2 flex flex-col items-end justify-center px-1.5 text-left hover:bg-[#232f3e] ${
+              accountOpen ? "bg-[#232f3e]" : ""
+            }`}
           >
-            <span className="flex items-center justify-between gap-1.5 rounded-md bg-[#414d5c] px-2 py-[3px]">
-              <span className="max-w-[168px] truncate text-[12px] leading-[14px] font-bold text-white">
+            <span className="inline-flex items-center gap-1.5 rounded-[4px] bg-[#414d5c] px-2 py-[3px]">
+              <span className="whitespace-nowrap text-[12px] leading-[15px] font-bold text-white">
                 {session.workgroup}
               </span>
-              <ChevronDown
-                className="h-3 w-3 shrink-0 text-[#d5dbdb]"
-                strokeWidth={2.5}
-              />
+              <CaretDownIcon className="h-2 w-2 shrink-0 text-[#d5dbdb]" />
             </span>
-            <span className="mt-0.5 pr-0.5 text-right text-[11px] leading-[13px] font-normal text-[#aab7b8]">
+            <span className="mt-px pr-0.5 text-[11px] leading-[13px] font-normal text-[#aab7b8]">
               {session.name}
             </span>
           </button>
@@ -312,15 +316,21 @@ function IconButton({
   label,
   children,
   className,
+  onClick,
+  ariaHasPopup,
 }: {
   label: string;
   children: React.ReactNode;
   className?: string;
+  onClick?: () => void;
+  ariaHasPopup?: "dialog";
 }) {
   return (
     <button
       type="button"
       aria-label={label}
+      aria-haspopup={ariaHasPopup}
+      onClick={onClick}
       className={`inline-flex h-12 w-10 items-center justify-center text-white hover:bg-[#232f3e] ${className ?? ""}`}
     >
       {children}

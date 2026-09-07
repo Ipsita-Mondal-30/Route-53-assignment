@@ -120,11 +120,11 @@ export function HostedZonesListSkeleton() {
 }
 
 export function ConsoleBootSkeleton() {
-  const { theme } = useUserSettings();
+  const { theme, hydrated } = useUserSettings();
   return (
     <div
       className="aws-console flex h-dvh flex-col overflow-hidden bg-[#161d27]"
-      data-theme={theme}
+      data-theme={hydrated ? theme : undefined}
     >
       <div className="flex h-12 items-center gap-3 border-b border-[#232b37] bg-[#16191f] px-3">
         <Skeleton className="h-5 w-14" />

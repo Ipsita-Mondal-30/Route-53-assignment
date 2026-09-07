@@ -38,7 +38,7 @@ export function HostedZoneTable({
   onOpen,
 }: Props) {
   return (
-    <div className="console-table-wrap">
+    <div className="console-table-wrap" data-shortcut-table="true">
       <table className="hz-table">
         <thead>
           <tr>

@@ -163,6 +163,7 @@ export function DashboardView() {
               <button
                 type="button"
                 aria-label="Refresh"
+                data-shortcut-refresh="true"
                 className="hz-refresh-btn"
                 onClick={() => setRefreshKey((value) => value + 1)}
               >
@@ -196,6 +197,7 @@ export function DashboardView() {
               value={noticeQuery}
               onChange={(event) => setNoticeQuery(event.target.value)}
               placeholder="Find notifications"
+              data-shortcut-search="page"
               className="hz-filter-input"
             />
           </label>

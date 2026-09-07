@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState, type RefObject } from "react";
-import { Upload } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 
 import { ConsoleButton } from "@/components/console/console-button";
 import { ApiError } from "@/lib/api";
@@ -101,6 +101,7 @@ export function ImportRecordsPanel({ zoneId, onClose, onImported }: Props) {
   async function onImport() {
     setBusy(true);
     setError(null);
+    let succeeded = false;
     try {
       const next = await commitBindImport(
         zoneId,
@@ -109,12 +110,19 @@ export function ImportRecordsPanel({ zoneId, onClose, onImported }: Props) {
         filename ?? undefined,
       );
       setResult(next);
-      await onImported();
       setStep("result");
+      succeeded = true;
     } catch (err) {
       setError(errorMessage(err, "Failed to import records."));
     } finally {
       setBusy(false);
+    }
+    if (succeeded) {
+      try {
+        await onImported();
+      } catch {
+        /* records are stored; list refresh is best-effort */
+      }
     }
   }
 
@@ -132,6 +140,7 @@ export function ImportRecordsPanel({ zoneId, onClose, onImported }: Props) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        aria-busy={busy}
         className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-[#414d5c] bg-[#161d27]"
       >
         <div className="border-b border-[#414d5c] px-5 py-4">
@@ -147,6 +156,12 @@ export function ImportRecordsPanel({ zoneId, onClose, onImported }: Props) {
           {error ? (
             <p className="mb-3 text-[14px] text-[#eb6f6f]" role="alert">
               {error}
+            </p>
+          ) : null}
+
+          {busy && step === "preview" ? (
+            <p className="mb-3 text-[14px] text-[#d1d5db]" role="status">
+              Importing records…
             </p>
           ) : null}
 
@@ -166,6 +181,7 @@ export function ImportRecordsPanel({ zoneId, onClose, onImported }: Props) {
               preview={preview}
               duplicateMode={duplicateMode}
               onDuplicateMode={setDuplicateMode}
+              disabled={busy}
             />
           ) : null}
 
@@ -183,7 +199,14 @@ export function ImportRecordsPanel({ zoneId, onClose, onImported }: Props) {
                 disabled={busy || !filename}
                 onClick={() => void onContinue()}
               >
-                Continue
+                {busy ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2.5} />
+                    Parsing…
+                  </span>
+                ) : (
+                  "Continue"
+                )}
               </ConsoleButton>
             </>
           ) : null}
@@ -194,10 +217,17 @@ export function ImportRecordsPanel({ zoneId, onClose, onImported }: Props) {
               </ConsoleButton>
               <ConsoleButton
                 variant="orange"
-                disabled={busy}
+                disabled={busy || (preview?.counts.valid ?? 0) === 0}
                 onClick={() => void onImport()}
               >
-                Import
+                {busy ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2.5} />
+                    Importing…
+                  </span>
+                ) : (
+                  "Import"
+                )}
               </ConsoleButton>
             </>
           ) : null}
@@ -297,10 +327,12 @@ function PreviewStep({
   preview,
   duplicateMode,
   onDuplicateMode,
+  disabled,
 }: {
   preview: BindPreview;
   duplicateMode: DuplicateMode;
   onDuplicateMode: (mode: DuplicateMode) => void;
+  disabled?: boolean;
 }) {
   const { counts } = preview;
   return (
@@ -325,6 +357,7 @@ function PreviewStep({
               name="duplicate-mode"
               checked={duplicateMode === "skip"}
               onChange={() => onDuplicateMode("skip")}
+              disabled={disabled}
               className="mt-0.5 accent-[#42b4ff]"
             />
             Skip duplicates
@@ -335,6 +368,7 @@ function PreviewStep({
               name="duplicate-mode"
               checked={duplicateMode === "replace"}
               onChange={() => onDuplicateMode("replace")}
+              disabled={disabled}
               className="mt-0.5 accent-[#42b4ff]"
             />
             Replace duplicates

@@ -16,7 +16,7 @@ export class ApiError extends Error {
   }
 }
 
-async function parseDetail(response: Response): Promise<string> {
+export async function parseDetail(response: Response): Promise<string> {
   try {
     const data = (await response.json()) as { detail?: unknown };
     if (typeof data.detail === "string") {

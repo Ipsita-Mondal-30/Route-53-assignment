@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { ConsoleButton } from "@/components/console/console-button";
+import { ConsoleActionsMenu } from "@/components/console/console-actions-menu";
 import { ImportRecordsPanel } from "@/components/console/import-records-panel";
 import { PropertyFilterDropdown } from "@/components/console/property-filter-dropdown";
 import {
@@ -25,6 +26,11 @@ import {
 import { HostedZoneDetailSkeleton } from "@/components/console/skeleton";
 import { InfoLink } from "@/components/route53/HostedZoneInfoPanel";
 import { ApiError } from "@/lib/api";
+import {
+  downloadHostedZoneExport,
+  zoneExportFilename,
+  type ExportFormat,
+} from "@/lib/hosted-zone-export-api";
 import type { DnsRecord } from "@/lib/mock/types";
 import { useRoute53Store } from "@/lib/mock/store";
 import { emitNotificationsChanged } from "@/lib/notifications-api";
@@ -204,6 +210,19 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
   const prevSelectedKey = useRef("");
 
   useEffect(() => {
+    if (!pendingDelete) {
+      return;
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape" && !busy) {
+        setPendingDelete(false);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [busy, pendingDelete]);
+
+  useEffect(() => {
     if (selectedIds.size >= 1) {
       if (prevSelectedKey.current !== selectedKey) {
         setPanelCollapsed(false);
@@ -367,6 +386,31 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
     }
   }
 
+  async function onExport(format: ExportFormat) {
+    if (!zone || busy) {
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      await downloadHostedZoneExport(
+        zone.id,
+        format,
+        zoneExportFilename(zone.name, format),
+      );
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.detail
+          : err instanceof Error
+            ? err.message
+            : "Failed to export hosted zone",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function onRefresh() {
     setError(null);
     try {
@@ -481,6 +525,27 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
             <ConsoleButton variant="normal" className="!min-h-8 !rounded-full !px-4">
               Configure query logging
             </ConsoleButton>
+            <ConsoleActionsMenu
+              disabled={busy}
+              sections={[
+                {
+                  id: "export",
+                  label: "Export",
+                  items: [
+                    {
+                      id: "json",
+                      label: "Export as JSON",
+                      onSelect: () => void onExport("json"),
+                    },
+                    {
+                      id: "bind",
+                      label: "Export as BIND",
+                      onSelect: () => void onExport("bind"),
+                    },
+                  ],
+                },
+              ]}
+            />
           </div>
         </div>
 
@@ -578,6 +643,7 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
                 <button
                   type="button"
                   aria-label="Refresh"
+                  data-shortcut-refresh="true"
                   className="hz-refresh-btn"
                   disabled={busy || loadingDetail}
                   onClick={() => void onRefresh()}
@@ -587,6 +653,7 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
                 <button
                   type="button"
                   disabled={deleteDisabled || busy}
+                  data-shortcut-delete="true"
                   onClick={() => setPendingDelete(true)}
                   className="hz-btn-grey"
                 >
@@ -618,6 +685,7 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Filter records by property or value"
+                  data-shortcut-search="page"
                   className="hz-filter-input font-bold placeholder:font-normal"
                 />
               </label>
@@ -681,7 +749,7 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
               </a>
             </p>
 
-            <div className="console-table-wrap">
+            <div className="console-table-wrap" data-shortcut-table="true">
               <table className="hz-table hz-records-table min-w-[1280px]">
                 <thead>
                   <tr>
@@ -888,8 +956,15 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
 
       {pendingDelete ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-4">
-          <div className="w-full max-w-md rounded-xl border border-[#414d5c] bg-[#161d27] p-5">
-            <h3 className="text-[16px] font-bold text-white">Delete record</h3>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-record-title"
+            className="w-full max-w-md rounded-xl border border-[#414d5c] bg-[#161d27] p-5"
+          >
+            <h3 id="delete-record-title" className="text-[16px] font-bold text-white">
+              Delete record
+            </h3>
             <p className="mt-2 text-[14px] text-[#d1d5db]">
               Delete {selectedIds.size} selected record
               {selectedIds.size === 1 ? "" : "s"}? This cannot be undone.

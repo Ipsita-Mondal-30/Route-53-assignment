@@ -10,6 +10,8 @@ import {
   type ReactNode,
 } from "react";
 
+import { USER_SETTINGS_STORAGE_KEY } from "@/lib/user-settings-storage";
+
 export type VisualMode = "browser" | "light" | "dark";
 
 export type ConsoleLanguage =
@@ -168,8 +170,6 @@ type StoredSettings = {
   visualMode: VisualMode;
 };
 
-const STORAGE_KEY = "route53.user.settings";
-
 const defaultSettings: StoredSettings = {
   language: "en-US",
   visualMode: "browser",
@@ -188,7 +188,7 @@ function loadSettings(): StoredSettings {
     return defaultSettings;
   }
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(USER_SETTINGS_STORAGE_KEY);
     if (!raw) {
       return defaultSettings;
     }
@@ -260,7 +260,7 @@ export function UserSettingsProvider({ children }: { children: ReactNode }) {
     if (!hydrated) {
       return;
     }
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    window.localStorage.setItem(USER_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
     applyDocumentSettings(settings.language, resolveTheme(settings.visualMode, browserDark));
   }, [browserDark, hydrated, settings]);
 

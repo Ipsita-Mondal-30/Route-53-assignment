@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Lock } from "lucide-react";
 
 const STORAGE_KEY = "route53.console.region";
 
@@ -58,6 +57,33 @@ const REGION_GROUPS: RegionGroup[] = [
 
 type Tab = "regions" | "local-zones";
 
+function LockIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      className={className}
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M5.25 7.25V5.4a2.75 2.75 0 0 1 5.5 0v1.85"
+        stroke="currentColor"
+        strokeWidth="1.35"
+        strokeLinecap="round"
+      />
+      <rect
+        x="3.4"
+        y="7.25"
+        width="9.2"
+        height="6.35"
+        rx="1.35"
+        stroke="currentColor"
+        strokeWidth="1.35"
+      />
+    </svg>
+  );
+}
+
 export function RegionPickerPopover({
   open,
   onClose,
@@ -103,19 +129,19 @@ export function RegionPickerPopover({
     <div
       role="dialog"
       aria-label={tab === "regions" ? "Regions" : "Local Zones"}
-      className="region-picker-popover absolute top-full right-0 z-[70] w-[300px] overflow-hidden rounded-lg border border-[#545b64] bg-[#1b232d] shadow-[0_8px_24px_rgba(0,0,0,0.55)]"
+      className="region-picker-popover absolute top-full right-0 z-[70] w-[440px] overflow-hidden rounded-lg border border-[#4a5262] bg-[#1b232d] shadow-[0_8px_24px_rgba(0,0,0,0.55)]"
     >
-      <div className="px-4 pt-3 pb-2">
+      <div className="px-5 pt-4 pb-3">
         <div
           role="tablist"
           aria-label="Region type"
-          className="flex h-8 overflow-hidden rounded-full border border-[#d5dbdb]"
+          className="inline-flex h-8 items-stretch overflow-hidden rounded-full border border-[#687078] bg-[#151d27]"
         >
           <button
             type="button"
             role="tab"
             aria-selected={tab === "regions"}
-            className={`flex-1 text-[13px] font-bold ${
+            className={`h-full px-6 text-[13px] leading-8 font-bold whitespace-nowrap ${
               tab === "regions"
                 ? "bg-[#42b4ff] text-[#0f141a]"
                 : "bg-transparent text-white hover:bg-white/5"
@@ -124,11 +150,12 @@ export function RegionPickerPopover({
           >
             Regions
           </button>
+          <span className="w-px shrink-0 self-stretch bg-[#687078]" aria-hidden />
           <button
             type="button"
             role="tab"
             aria-selected={tab === "local-zones"}
-            className={`flex-1 text-[13px] font-bold ${
+            className={`h-full px-6 text-[13px] leading-8 font-bold whitespace-nowrap ${
               tab === "local-zones"
                 ? "bg-[#42b4ff] text-[#0f141a]"
                 : "bg-transparent text-white hover:bg-white/5"
@@ -141,32 +168,29 @@ export function RegionPickerPopover({
       </div>
 
       {tab === "regions" ? (
-        <div className="region-picker-scroll max-h-[352px] overflow-y-auto overscroll-contain pb-2">
+        <div className="region-picker-scroll max-h-[calc(100vh-9.5rem)] overflow-y-auto overscroll-contain">
           {REGION_GROUPS.map((group) => (
             <div key={group.label}>
-              <p className="region-picker-muted px-4 pt-3 pb-1 text-[13px] leading-4 font-bold text-[#d1d5db]">
+              <p className="region-picker-muted px-5 pt-3 pb-1.5 text-[13px] leading-4 font-bold text-[#eaeded]">
                 {group.label}
               </p>
               <ul>
                 {group.regions.map((region) => {
                   const active = selected === region.code;
                   return (
-                    <li key={region.code}>
+                    <li key={region.code} className="border-b border-[#2a323c]">
                       <button
                         type="button"
                         onClick={() => selectRegion(region.code)}
-                        className={`flex w-full items-center gap-2 px-4 py-[7px] text-left ${
+                        className={`flex h-[38px] w-full items-center gap-2.5 px-5 text-left ${
                           active ? "bg-[#1a2838]" : "hover:bg-[#232f3e]"
                         }`}
                       >
-                        <Lock
-                          className="h-3.5 w-3.5 shrink-0 text-[#aab7b8]"
-                          strokeWidth={1.75}
-                        />
-                        <span className="min-w-0 flex-1 truncate text-[13px] leading-5 text-[#eaeded]">
+                        <LockIcon className="h-3 w-3 shrink-0 text-[#d5dbdb]" />
+                        <span className="min-w-0 flex-1 truncate text-[13px] leading-5 text-[#d1d5db]">
                           {region.name}
                         </span>
-                        <span className="region-picker-muted shrink-0 text-[12px] leading-5 text-[#aab7b8]">
+                        <span className="region-picker-muted shrink-0 text-[12px] leading-5 text-[#9ba3af]">
                           {region.code}
                         </span>
                       </button>
@@ -197,8 +221,8 @@ export function RegionPickerPopover({
         </div>
       )}
 
-      <div className="border-t border-[#3d4853] px-4 py-3">
-        <div className="flex items-center gap-2.5 text-[13px] font-bold">
+      <div className="border-t border-[#3f4751] px-5 pt-3.5 pb-6">
+        <div className="flex items-center gap-3 text-[13px] leading-5 font-bold">
           <button type="button" className="region-picker-link text-[#42b4ff] hover:underline">
             Manage Regions
           </button>

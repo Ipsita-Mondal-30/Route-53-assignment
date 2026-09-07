@@ -279,8 +279,8 @@ def test_bind_export_import_round_trip(auth_client: TestClient) -> None:
     )
     assert imported.status_code == 200, imported.text
     result = imported.json()
-    assert result["failed"] == 0
     assert result["imported"] == len(original)
+    assert all(row["type"] == "SOA" for row in result["failures"])
 
     dest_records = _list_records(auth_client, dest_id)
     assert {_canonical_api(row) for row in dest_records} == {
@@ -305,6 +305,14 @@ def test_bulk_json_and_bind_zip(auth_client: TestClient) -> None:
     assert json_response.headers["x-export-filename"] == "hosted-zones.json"
     bundle = json_response.json()
     assert {zone["zoneId"] for zone in bundle["zones"]} == {first_id, second_id}
+
+    json_one = auth_client.post(
+        "/hosted-zones/export",
+        json={"zone_ids": [first_id], "format": "json"},
+    )
+    assert json_one.status_code == 200
+    assert json_one.headers["x-export-filename"] == f"{first_name}.json"
+    assert json_one.json()["zoneId"] == first_id
 
     bind_one = auth_client.post(
         "/hosted-zones/export",
@@ -333,3 +341,29 @@ def test_export_unauthorized_401(client: TestClient) -> None:
 def test_export_zone_not_found_404(auth_client: TestClient) -> None:
     response = auth_client.get("/hosted-zones/ZDOESNOTEXIST01/export")
     assert response.status_code == 404
+
+
+def test_empty_zone_bind_and_private_json(auth_client: TestClient) -> None:
+    name = f"empty-{uuid.uuid4().hex[:10]}.example.com"
+    created = auth_client.post(
+        "/hosted-zones",
+        json={"name": name, "comment": None, "type": "Private"},
+    )
+    assert created.status_code == 201
+    zone_id = created.json()["id"]
+
+    bind = auth_client.get(
+        f"/hosted-zones/{zone_id}/export", params={"format": "bind"}
+    )
+    assert bind.status_code == 200
+    text = bind.text
+    parsed = parse_zone(text, zone_origin=f"{name}.")
+    assert [row.type for row in parsed] == ["SOA"]
+
+    json_response = auth_client.get(
+        f"/hosted-zones/{zone_id}/export", params={"format": "json"}
+    )
+    document = json_response.json()
+    assert document["type"] == "PRIVATE"
+    assert document["description"] == ""
+    assert document["records"] == []

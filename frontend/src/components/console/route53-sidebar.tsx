@@ -166,7 +166,7 @@ function SidebarNav({
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex h-11 shrink-0 items-center justify-between px-4">
         <span
-          className="text-[16px] leading-5 font-bold text-white"
+          className="text-[18px] leading-6 font-bold text-white"
           style={{ fontFamily: sidebarFont }}
         >
           Route 53
@@ -212,10 +212,10 @@ function SidebarNav({
         {sections.map((section) => {
           const openSection = expanded[section.id] ?? true;
           return (
-            <div key={section.id}>
+            <div key={section.id} className="mt-2">
               <button
                 type="button"
-                className="flex w-full items-center gap-1.5 px-4 py-[5px] text-left text-[14px] leading-5 font-bold text-white hover:bg-[#1c2430]"
+                className="flex w-full items-center gap-1.5 px-4 py-1.5 text-left text-[16px] leading-6 font-bold text-white hover:bg-[#1c2430]"
                 aria-expanded={openSection}
                 onClick={() => onToggleSection(section.id)}
               >

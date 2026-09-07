@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass
 
-from sqlalchemy import select
+from sqlalchemy import insert, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -110,6 +111,7 @@ def commit(
     imported = 0
     skipped = 0
     failures: list[BindImportFailure] = []
+    to_insert: list[dict[str, object]] = []
 
     for item in prepared:
         if item.status in {"invalid", "unsupported"}:
@@ -142,34 +144,47 @@ def commit(
 
         columns = record_write_to_columns(write)
         key = _identity(columns)
-        try:
-            with db.begin_nested():
-                if item.status == "duplicate" and duplicate_mode == "replace":
-                    current = existing.get(key)
-                    if current is None:
-                        skipped += 1
-                        continue
-                    for field, value in columns.items():
-                        setattr(current, field, value)
-                    db.add(current)
-                    db.flush()
-                    imported += 1
-                    continue
+        if item.status == "duplicate" and duplicate_mode == "replace":
+            current = existing.get(key)
+            if current is None:
+                skipped += 1
+                continue
+            for field, value in columns.items():
+                setattr(current, field, value)
+            imported += 1
+            continue
 
-                record = DnsRecord(hosted_zone_id=zone_id, **columns)
-                db.add(record)
-                db.flush()
-                existing[key] = record
-                imported += 1
-        except IntegrityError:
-            failures.append(
-                BindImportFailure(
-                    name=str(item.columns["name"]),
-                    type=str(item.columns["type"]),
-                    value=_display_value(item.columns),
-                    reason="Record could not be stored.",
+        to_insert.append(
+            {
+                "id": str(uuid.uuid4()),
+                "hosted_zone_id": zone_id,
+                **columns,
+            }
+        )
+
+    if to_insert:
+        try:
+            # One multi-row INSERT + one record_count bump. Per-row ORM flushes
+            # (and mapper after_insert UPDATEs) were a round-trip each against
+            # remote MySQL and made small zone files feel hung.
+            with db.begin_nested():
+                db.execute(insert(DnsRecord), to_insert)
+                db.execute(
+                    update(HostedZone)
+                    .where(HostedZone.id == zone_id)
+                    .values(record_count=HostedZone.record_count + len(to_insert))
                 )
-            )
+            imported += len(to_insert)
+        except IntegrityError:
+            for row in to_insert:
+                failures.append(
+                    BindImportFailure(
+                        name=str(row["name"]),
+                        type=str(row["type"]),
+                        value=_display_value(row),
+                        reason="Record could not be stored.",
+                    )
+                )
 
     if imported:
         notification_service.enqueue_activity(

@@ -11,6 +11,7 @@ import {
   ServiceBreadcrumb,
   type BreadcrumbCrumb,
 } from "@/components/console/service-breadcrumb";
+import { KeyboardShortcutsProvider } from "@/components/console/keyboard-shortcuts-provider";
 import { ConsoleBootSkeleton } from "@/components/console/skeleton";
 import {
   DEMO_CONSOLE_SESSION,
@@ -117,19 +118,15 @@ export function ConsoleLayout({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
-  if (!authReady) {
-    return (
-      <UserSettingsProvider>
-        <ConsoleBootSkeleton />
-      </UserSettingsProvider>
-    );
-  }
-
   return (
     <UserSettingsProvider>
-      <Route53StoreProvider>
-        <ConsoleShell session={session}>{children}</ConsoleShell>
-      </Route53StoreProvider>
+      {!authReady ? (
+        <ConsoleBootSkeleton />
+      ) : (
+        <Route53StoreProvider>
+          <ConsoleShell session={session}>{children}</ConsoleShell>
+        </Route53StoreProvider>
+      )}
     </UserSettingsProvider>
   );
 }
@@ -141,7 +138,7 @@ function ConsoleShell({
   session: ConsoleSession;
   children: ReactNode;
 }) {
-  const { theme } = useUserSettings();
+  const { theme, hydrated } = useUserSettings();
   const pathname = usePathname();
   const { getZone, ensureZone } = useRoute53Store();
   const [collapsed, setCollapsed] = useState(false);
@@ -201,33 +198,35 @@ function ConsoleShell({
   }
 
   return (
-    <div
-      className="aws-console flex h-dvh flex-col overflow-hidden"
-      data-theme={theme}
-    >
-      <GlobalNav
-        session={session}
-        amazonQOpen={amazonQOpen}
-        onToggleAmazonQ={() => setAmazonQOpen((value) => !value)}
-      />
-      <div className="flex min-h-0 min-w-0 flex-1">
-        <AmazonQPanel open={amazonQOpen} onClose={() => setAmazonQOpen(false)} />
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-          <ServiceBreadcrumb crumbs={crumbs} onToggleSidebar={toggleSidebar} />
-          <div className="flex min-h-0 min-w-0 flex-1">
-            <Route53Sidebar
-              open={mobileOpen}
-              collapsed={collapsed}
-              onCollapse={() => setCollapsed(true)}
-              onCloseMobile={() => setMobileOpen(false)}
-            />
-            <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto px-4 py-5 sm:px-5 lg:px-6">
-              {children}
-            </main>
+    <KeyboardShortcutsProvider>
+      <div
+        className="aws-console flex h-dvh flex-col overflow-hidden"
+        data-theme={hydrated ? theme : undefined}
+      >
+        <GlobalNav
+          session={session}
+          amazonQOpen={amazonQOpen}
+          onToggleAmazonQ={() => setAmazonQOpen((value) => !value)}
+        />
+        <div className="flex min-h-0 min-w-0 flex-1">
+          <AmazonQPanel open={amazonQOpen} onClose={() => setAmazonQOpen(false)} />
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+            <ServiceBreadcrumb crumbs={crumbs} onToggleSidebar={toggleSidebar} />
+            <div className="flex min-h-0 min-w-0 flex-1">
+              <Route53Sidebar
+                open={mobileOpen}
+                collapsed={collapsed}
+                onCollapse={() => setCollapsed(true)}
+                onCloseMobile={() => setMobileOpen(false)}
+              />
+              <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto px-4 py-5 sm:px-5 lg:px-6">
+                {children}
+              </main>
+            </div>
+            <ConsoleFooter />
           </div>
-          <ConsoleFooter />
         </div>
       </div>
-    </div>
+    </KeyboardShortcutsProvider>
   );
 }

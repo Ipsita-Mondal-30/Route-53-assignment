@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { ConsoleButton } from "@/components/console/console-button";
+import { ConsoleActionsMenu } from "@/components/console/console-actions-menu";
 import { HostedZoneEmptyState } from "@/components/route53/HostedZoneEmptyState";
 import {
   HostedZoneTable,
@@ -18,6 +19,11 @@ import {
 } from "@/components/route53/HostedZoneTable";
 import { HostedZonesListSkeleton } from "@/components/console/skeleton";
 import { ApiError } from "@/lib/api";
+import {
+  downloadSelectedHostedZonesExport,
+  zoneExportFilename,
+  type ExportFormat,
+} from "@/lib/hosted-zone-export-api";
 import { useRoute53Store } from "@/lib/mock/store";
 
 export function HostedZonesView() {
@@ -109,6 +115,37 @@ export function HostedZonesView() {
     }
   }
 
+  async function onExport(format: ExportFormat) {
+    if (!hasSelection || busy) {
+      return;
+    }
+    const ids = Array.from(selectedIds);
+    setBusy(true);
+    setActionError(null);
+    try {
+      const fallback =
+        ids.length === 1
+          ? zoneExportFilename(
+              zones.find((zone) => zone.id === ids[0])?.name ?? "hosted-zone",
+              format,
+            )
+          : format === "json"
+            ? "hosted-zones.json"
+            : "hosted-zones.zip";
+      await downloadSelectedHostedZonesExport(ids, format, fallback);
+    } catch (err) {
+      setActionError(
+        err instanceof ApiError
+          ? err.detail
+          : err instanceof Error
+            ? err.message
+            : "Failed to export hosted zones",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function onRefresh() {
     setActionError(null);
     try {
@@ -133,6 +170,7 @@ export function HostedZonesView() {
           <button
             type="button"
             aria-label="Refresh"
+            data-shortcut-refresh="true"
             className="hz-refresh-btn"
             disabled={loading || busy}
             onClick={() => void onRefresh()}
@@ -158,11 +196,34 @@ export function HostedZonesView() {
           <ConsoleButton
             variant="secondary"
             disabled={!hasSelection || busy}
+            data-shortcut-delete="true"
             onClick={() => void onDelete()}
             className="!font-bold"
           >
             Delete
           </ConsoleButton>
+          <ConsoleActionsMenu
+            variant="secondary"
+            disabled={!hasSelection || busy}
+            sections={[
+              {
+                id: "export",
+                label: "Export",
+                items: [
+                  {
+                    id: "json",
+                    label: "Export as JSON",
+                    onSelect: () => void onExport("json"),
+                  },
+                  {
+                    id: "bind",
+                    label: "Export as BIND",
+                    onSelect: () => void onExport("bind"),
+                  },
+                ],
+              },
+            ]}
+          />
           <ConsoleButton href="/hosted-zones/new" variant="orange" className="!font-bold">
             Create hosted zone
           </ConsoleButton>
@@ -197,6 +258,7 @@ export function HostedZonesView() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Filter records by property or value"
+            data-shortcut-search="page"
             className="hz-filter-input font-bold placeholder:font-normal"
           />
         </label>

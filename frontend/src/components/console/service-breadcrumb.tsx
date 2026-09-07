@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Columns2, Info, Menu } from "lucide-react";
+import { ChevronRight, Info, Menu } from "lucide-react";
 
 export type BreadcrumbCrumb = {
   label: string;
@@ -68,13 +68,6 @@ export function ServiceBreadcrumb({
       </nav>
 
       <div className="ml-auto flex items-center gap-1">
-        <button
-          type="button"
-          aria-label="Split view"
-          className="inline-flex h-7 w-7 items-center justify-center text-[#aab7b8] hover:text-white"
-        >
-          <Columns2 className="h-4 w-4" strokeWidth={2.25} />
-        </button>
         <button
           type="button"
           aria-label="Info"
