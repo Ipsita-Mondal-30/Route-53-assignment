@@ -9,11 +9,13 @@ from sqlalchemy.orm import Session
 
 from app.models.dns_record import DnsRecord
 from app.models.hosted_zone import HostedZone
+from app.models.user import User
 from app.schemas.dns_record import (
     DnsRecordType,
     DnsRecordWrite,
     record_write_to_columns,
 )
+from app.services import notification_service
 from app.services.hosted_zone_service import HostedZoneNotFound
 
 
@@ -37,6 +39,7 @@ def create(
     db: Session,
     zone_id: str,
     data: DnsRecordWrite,
+    user: User,
 ) -> DnsRecord:
     zone = db.get(HostedZone, zone_id)
     if zone is None:
@@ -45,6 +48,17 @@ def create(
     columns = record_write_to_columns(data)
     record = DnsRecord(hosted_zone_id=zone_id, **columns)
     db.add(record)
+    db.flush()
+    notification_service.enqueue_activity(
+        db,
+        user,
+        title="DNS record created",
+        body=(
+            f"[Notification] {record.type} record {record.name} was created "
+            f"in hosted zone {zone.name}."
+        ),
+        href=f"/hosted-zones/{zone.id}",
+    )
     db.commit()
     db.refresh(record)
     return record
@@ -101,6 +115,7 @@ def update(
     db: Session,
     record_id: str,
     data: DnsRecordWrite,
+    user: User,
 ) -> DnsRecord:
     record = get_by_id(db, record_id)
     if record is None:
@@ -110,6 +125,18 @@ def update(
         setattr(record, key, value)
 
     db.add(record)
+    zone = db.get(HostedZone, record.hosted_zone_id)
+    zone_name = zone.name if zone is not None else record.hosted_zone_id
+    notification_service.enqueue_activity(
+        db,
+        user,
+        title="DNS record updated",
+        body=(
+            f"[Notification] {record.type} record {record.name} was updated "
+            f"in hosted zone {zone_name}."
+        ),
+        href=f"/hosted-zones/{record.hosted_zone_id}",
+    )
     db.commit()
     db.refresh(record)
     return record

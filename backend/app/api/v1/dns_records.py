@@ -4,15 +4,22 @@ from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import AppError, NotFoundError
 from app.models.user import User
+from app.schemas.bind_import import (
+    BindImportCommitRequest,
+    BindImportRequest,
+    BindImportResultOut,
+    BindPreviewOut,
+)
 from app.schemas.dns_record import (
     DnsRecordListOut,
     DnsRecordOut,
     DnsRecordType,
     DnsRecordWrite,
 )
-from app.services import dns_record_service
+from app.services import bind_import_service, dns_record_service
+from app.services.bind_parser import BindParseError
 
 router = APIRouter(tags=["records"])
 
@@ -51,6 +58,47 @@ def list_dns_records(
 
 
 @router.post(
+    "/hosted-zones/{zone_id}/records/import/preview",
+    response_model=BindPreviewOut,
+)
+def preview_bind_import(
+    zone_id: str,
+    body: BindImportRequest,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+) -> BindPreviewOut:
+    try:
+        return bind_import_service.preview(
+            db, zone_id, body.content, body.filename
+        )
+    except BindParseError as exc:
+        raise AppError(str(exc)) from exc
+
+
+@router.post(
+    "/hosted-zones/{zone_id}/records/import",
+    response_model=BindImportResultOut,
+)
+def commit_bind_import(
+    zone_id: str,
+    body: BindImportCommitRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> BindImportResultOut:
+    try:
+        return bind_import_service.commit(
+            db,
+            zone_id,
+            current_user,
+            body.content,
+            body.filename,
+            body.duplicate_mode,
+        )
+    except BindParseError as exc:
+        raise AppError(str(exc)) from exc
+
+
+@router.post(
     "/hosted-zones/{zone_id}/records",
     response_model=DnsRecordOut,
     status_code=status.HTTP_201_CREATED,
@@ -59,9 +107,9 @@ def create_dns_record(
     zone_id: str,
     body: DnsRecordWrite,
     db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> DnsRecordOut:
-    return dns_record_service.create(db, zone_id, body)
+    return dns_record_service.create(db, zone_id, body, current_user)
 
 
 @router.get("/records/{record_id}", response_model=DnsRecordOut)
@@ -81,9 +129,9 @@ def update_dns_record(
     record_id: str,
     body: DnsRecordWrite,
     db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> DnsRecordOut:
-    return dns_record_service.update(db, record_id, body)
+    return dns_record_service.update(db, record_id, body, current_user)
 
 
 @router.delete(

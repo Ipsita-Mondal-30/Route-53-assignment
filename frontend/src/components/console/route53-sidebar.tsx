@@ -166,7 +166,7 @@ function SidebarNav({
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex h-11 shrink-0 items-center justify-between px-4">
         <span
-          className="text-[18px] leading-6 font-bold tracking-[-0.01em] text-[#eaeded]"
+          className="text-[16px] leading-5 font-bold text-white"
           style={{ fontFamily: sidebarFont }}
         >
           Route 53
@@ -215,14 +215,14 @@ function SidebarNav({
             <div key={section.id}>
               <button
                 type="button"
-                className="flex w-full items-center gap-2.5 px-4 py-2 text-left text-[15px] leading-6 font-bold text-[#eaeded] hover:bg-[#1c2430]"
+                className="flex w-full items-center gap-1.5 px-4 py-[5px] text-left text-[14px] leading-5 font-bold text-white hover:bg-[#1c2430]"
                 aria-expanded={openSection}
                 onClick={() => onToggleSection(section.id)}
               >
                 {openSection ? (
-                  <CaretDownIcon className="h-[9px] w-[9px] shrink-0 text-[#9aa0a9]" />
+                  <CaretDownIcon className="h-2 w-2 shrink-0 text-white" />
                 ) : (
-                  <CaretRightIcon className="h-[9px] w-[9px] shrink-0 text-[#9aa0a9]" />
+                  <CaretRightIcon className="h-2 w-2 shrink-0 text-white" />
                 )}
                 <span>{section.label}</span>
               </button>
@@ -252,7 +252,7 @@ function SidebarNav({
             <a
               key={link.label}
               href={link.href}
-              className="flex items-center gap-1.5 px-1 py-2 text-[15px] leading-6 font-normal text-[#d5dbdb]! hover:bg-[#1c2430] hover:text-[#eaeded]! hover:no-underline"
+              className="flex items-center gap-1.5 px-1 py-[5px] text-[14px] leading-5 font-normal text-[#d5dbdb]! hover:bg-[#1c2430] hover:text-[#eaeded]! hover:no-underline"
             >
               <span>{link.label}</span>
               <ExternalLinkIcon className="h-3 w-3 shrink-0 text-[#9aa0a9]" />
@@ -284,23 +284,17 @@ function SidebarLink({
       href={href}
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
-      className={`relative flex items-center justify-between gap-2 py-2 text-[15px] leading-6 font-normal hover:no-underline ${
-        indented ? "pr-4 pl-9" : "px-4"
+      className={`relative flex items-center justify-between gap-2 py-[5px] text-[14px] leading-5 font-normal hover:no-underline ${
+        indented ? "pr-4 pl-8" : "px-4"
       } ${
         active
           ? "text-[#42b4ff]! hover:text-[#42b4ff]!"
           : "text-[#d5dbdb]! hover:bg-[#1c2430] hover:text-[#eaeded]!"
       }`}
     >
-      {active && !indented ? (
-        <span
-          aria-hidden="true"
-          className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-sm bg-[#42b4ff]"
-        />
-      ) : null}
       <span className="truncate">{children}</span>
       {badge ? (
-        <span className="shrink-0 text-[13px] font-normal text-[#42b4ff] underline decoration-dashed decoration-[#42b4ff] underline-offset-[3px]">
+        <span className="shrink-0 text-[12px] font-normal text-[#42b4ff] underline decoration-dotted decoration-[#42b4ff] underline-offset-[3px]">
           {badge}
         </span>
       ) : null}

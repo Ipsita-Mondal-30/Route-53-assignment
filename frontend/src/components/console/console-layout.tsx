@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
+import { AmazonQPanel } from "@/components/console/amazon-q-panel";
 import { ConsoleFooter } from "@/components/console/console-footer";
 import { GlobalNav } from "@/components/console/global-nav";
 import { Route53Sidebar } from "@/components/console/route53-sidebar";
@@ -55,6 +56,9 @@ function crumbsForPath(
   }
   if (pathname === "/settings") {
     return [{ label: "Settings" }];
+  }
+  if (pathname === "/notifications") {
+    return [{ label: "Notification center" }];
   }
   if (pathname === "/health-checks") return [{ label: "Health checks" }];
   if (pathname === "/profiles") return [{ label: "Profiles" }];
@@ -142,6 +146,7 @@ function ConsoleShell({
   const { getZone, ensureZone } = useRoute53Store();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [amazonQOpen, setAmazonQOpen] = useState(false);
   const [zoneName, setZoneName] = useState<string | undefined>();
 
   useEffect(() => {
@@ -152,6 +157,7 @@ function ConsoleShell({
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setMobileOpen(false);
+        setAmazonQOpen(false);
       }
     }
     window.addEventListener("keydown", onKey);
@@ -199,20 +205,29 @@ function ConsoleShell({
       className="aws-console flex h-dvh flex-col overflow-hidden"
       data-theme={theme}
     >
-      <GlobalNav session={session} />
-      <ServiceBreadcrumb crumbs={crumbs} onToggleSidebar={toggleSidebar} />
+      <GlobalNav
+        session={session}
+        amazonQOpen={amazonQOpen}
+        onToggleAmazonQ={() => setAmazonQOpen((value) => !value)}
+      />
       <div className="flex min-h-0 min-w-0 flex-1">
-        <Route53Sidebar
-          open={mobileOpen}
-          collapsed={collapsed}
-          onCollapse={() => setCollapsed(true)}
-          onCloseMobile={() => setMobileOpen(false)}
-        />
-        <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto px-4 py-5 sm:px-5 lg:px-6">
-          {children}
-        </main>
+        <AmazonQPanel open={amazonQOpen} onClose={() => setAmazonQOpen(false)} />
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <ServiceBreadcrumb crumbs={crumbs} onToggleSidebar={toggleSidebar} />
+          <div className="flex min-h-0 min-w-0 flex-1">
+            <Route53Sidebar
+              open={mobileOpen}
+              collapsed={collapsed}
+              onCollapse={() => setCollapsed(true)}
+              onCloseMobile={() => setMobileOpen(false)}
+            />
+            <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto px-4 py-5 sm:px-5 lg:px-6">
+              {children}
+            </main>
+          </div>
+          <ConsoleFooter />
+        </div>
       </div>
-      <ConsoleFooter />
     </div>
   );
 }

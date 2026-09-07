@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { ConsoleButton } from "@/components/console/console-button";
+import { ImportRecordsPanel } from "@/components/console/import-records-panel";
 import { PropertyFilterDropdown } from "@/components/console/property-filter-dropdown";
 import {
   RecordDetailsPanel,
@@ -26,6 +27,7 @@ import { InfoLink } from "@/components/route53/HostedZoneInfoPanel";
 import { ApiError } from "@/lib/api";
 import type { DnsRecord } from "@/lib/mock/types";
 import { useRoute53Store } from "@/lib/mock/store";
+import { emitNotificationsChanged } from "@/lib/notifications-api";
 
 const RECORD_TYPE_OPTIONS = [
   "A",
@@ -108,6 +110,7 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
   const [form, setForm] = useState<RecordFormState>(emptyForm);
   const [error, setError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [zoneMissing, setZoneMissing] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -589,8 +592,13 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
                 >
                   Delete record
                 </button>
-                <ConsoleButton variant="normal" className="font-bold!">
-                  Import zone file
+                <ConsoleButton
+                  variant="normal"
+                  className="font-bold!"
+                  disabled={busy}
+                  onClick={() => setImportOpen(true)}
+                >
+                  Import records
                 </ConsoleButton>
                 <ConsoleButton
                   variant="orange"
@@ -900,6 +908,17 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
             </div>
           </div>
         </div>
+      ) : null}
+
+      {importOpen ? (
+        <ImportRecordsPanel
+          zoneId={zoneId}
+          onClose={() => setImportOpen(false)}
+          onImported={async () => {
+            await refreshRecords(zoneId);
+            emitNotificationsChanged();
+          }}
+        />
       ) : null}
     </div>
   );

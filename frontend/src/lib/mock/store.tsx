@@ -25,6 +25,7 @@ import {
   updateHostedZone as apiUpdateZone,
 } from "@/lib/hosted-zones-api";
 import { normalizeDomainName } from "@/lib/mock/hosted-zones";
+import { emitNotificationsChanged } from "@/lib/notifications-api";
 import type {
   ConsoleNotification,
   DnsRecord,
@@ -150,6 +151,7 @@ export function Route53StoreProvider({ children }: { children: ReactNode }) {
       type: input.type,
     });
     setZones((current) => [zone, ...current.filter((item) => item.id !== zone.id)]);
+    emitNotificationsChanged();
     return zone;
   }, []);
 
@@ -165,6 +167,7 @@ export function Route53StoreProvider({ children }: { children: ReactNode }) {
       setZones((current) =>
         current.map((item) => (item.id === zoneId ? next : item)),
       );
+      emitNotificationsChanged();
       return next;
     },
     [],
@@ -187,6 +190,7 @@ export function Route53StoreProvider({ children }: { children: ReactNode }) {
           : zone,
       ),
     );
+    emitNotificationsChanged();
     return record;
   }, []);
 
@@ -195,6 +199,7 @@ export function Route53StoreProvider({ children }: { children: ReactNode }) {
     setRecords((current) =>
       current.map((record) => (record.id === recordId ? updated : record)),
     );
+    emitNotificationsChanged();
   }, []);
 
   const deleteRecord = useCallback(async (recordId: string) => {

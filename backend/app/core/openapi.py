@@ -48,7 +48,16 @@ OPENAPI_TAGS: list[dict[str, str]] = [
         "description": (
             "CRUD for DNS records nested under a hosted zone. "
             "Payloads are validated per record type (A, AAAA, CNAME, TXT, NS, "
-            "PTR, MX, SRV, CAA) via a discriminated union."
+            "PTR, MX, SRV, CAA) via a discriminated union. "
+            "BIND zone files can be previewed and imported."
+        ),
+    },
+    {
+        "name": "notifications",
+        "description": (
+            "In-console notifications persisted per user. "
+            "Supports Most recent, User configured, and AWS managed tabs, "
+            "plus mark-read."
         ),
     },
 ]

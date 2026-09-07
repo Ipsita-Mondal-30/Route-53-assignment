@@ -5,31 +5,45 @@ import { logoutSession } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import {
-  Bell,
   ChevronDown,
-  CircleHelp,
-  LayoutGrid,
   Search,
-  Settings,
-  SquareTerminal,
 } from "lucide-react";
 
+import { NotificationNavButton } from "@/components/console/notification-popover";
+import { RegionPickerPopover } from "@/components/console/region-picker-popover";
 import { UserSettingsPopover } from "@/components/console/user-settings-popover";
 import {
   AmazonQIcon,
   AmazonQSearchIcon,
   AwsWordmark,
+  CaretDownIcon,
+  CloudShellIcon,
+  GearIcon,
+  GridIcon,
+  HelpIcon,
 } from "@/components/console/console-icons";
 
-export function GlobalNav({ session }: { session: ConsoleSession }) {
+export function GlobalNav({
+  session,
+  amazonQOpen = false,
+  onToggleAmazonQ,
+}: {
+  session: ConsoleSession;
+  amazonQOpen?: boolean;
+  onToggleAmazonQ?: () => void;
+}) {
   const router = useRouter();
   const searchRef = useRef<HTMLInputElement>(null);
   const [accountOpen, setAccountOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [regionOpen, setRegionOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const menuId = useId();
   const accountRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const regionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -40,6 +54,8 @@ export function GlobalNav({ session }: { session: ConsoleSession }) {
       if (event.key === "Escape") {
         setAccountOpen(false);
         setSettingsOpen(false);
+        setNotificationsOpen(false);
+        setRegionOpen(false);
       }
     }
     window.addEventListener("keydown", onKey);
@@ -54,28 +70,39 @@ export function GlobalNav({ session }: { session: ConsoleSession }) {
       if (!settingsRef.current?.contains(event.target as Node)) {
         setSettingsOpen(false);
       }
+      if (!notificationsRef.current?.contains(event.target as Node)) {
+        setNotificationsOpen(false);
+      }
+      if (!regionRef.current?.contains(event.target as Node)) {
+        setRegionOpen(false);
+      }
     }
     document.addEventListener("pointerdown", onPointer);
     return () => document.removeEventListener("pointerdown", onPointer);
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 flex h-12 shrink-0 items-center border-b border-[#232b37] bg-[#16191f] text-[14px] font-bold text-white">
+    <header className="sticky top-0 z-50 flex h-12 shrink-0 items-center overflow-visible border-b border-[#232b37] bg-[#16191f] text-[14px] font-bold text-white">
       <div className="flex min-w-0 flex-1 items-center">
         <a
           href="/"
-          className="flex h-12 shrink-0 items-center px-3 text-white hover:text-white"
+          id="nav-home-link"
+          className="inline-flex h-12 w-[65px] shrink-0 items-center justify-center"
           aria-label="AWS"
         >
-          <AwsWordmark />
+          <AwsWordmark className="block h-[22px] w-[40px] text-[#eaeded]" />
         </a>
 
         <NavDivider />
 
         <button
           type="button"
-          className="inline-flex h-12 w-10 shrink-0 items-center justify-center hover:bg-[#232f3e]"
+          className={`inline-flex h-12 w-10 shrink-0 items-center justify-center hover:bg-[#232f3e] ${
+            amazonQOpen ? "bg-[#232f3e] shadow-[inset_0_0_0_2px_#42b4ff]" : ""
+          }`}
           aria-label="Amazon Q"
+          aria-pressed={amazonQOpen}
+          onClick={onToggleAmazonQ}
         >
           <AmazonQIcon className="h-6 w-6" />
         </button>
@@ -87,7 +114,7 @@ export function GlobalNav({ session }: { session: ConsoleSession }) {
           className="inline-flex h-12 w-10 shrink-0 items-center justify-center text-white hover:bg-[#232f3e]"
           aria-label="Services"
         >
-          <LayoutGrid className="h-[18px] w-[18px]" strokeWidth={2.25} />
+          <GridIcon className="h-[18px] w-[18px]" />
         </button>
 
         <label className="relative mx-2 hidden min-w-0 flex-1 items-center md:flex">
@@ -100,12 +127,15 @@ export function GlobalNav({ session }: { session: ConsoleSession }) {
             ref={searchRef}
             type="search"
             placeholder="Search"
-            className="h-8 w-full max-w-[720px] rounded-md border border-[#545b64] bg-[#0f141a] py-0 pr-[108px] pl-9 text-[14px] leading-5 font-bold text-white outline-none placeholder:font-normal placeholder:text-[#aab7b8] focus:border-[#42b4ff] focus:shadow-[0_0_0_1px_#42b4ff]"
+            className="h-8 w-full max-w-[720px] rounded-md border border-[#545b64] bg-[#0f141a] py-0 pr-[210px] pl-9 text-[14px] leading-5 font-normal text-white outline-none placeholder:italic placeholder:font-normal placeholder:text-[#aab7b8] focus:border-[#42b4ff] focus:shadow-[0_0_0_1px_#42b4ff]"
           />
-          <span className="pointer-events-none absolute top-1/2 right-9 -translate-y-1/2 text-[12px] leading-none font-bold text-[#aab7b8]">
+          <span className="pointer-events-none absolute top-1/2 right-[138px] -translate-y-1/2 text-[12px] leading-none font-bold text-[#aab7b8]">
             [Option+S]
           </span>
-          <AmazonQSearchIcon className="pointer-events-none absolute top-1/2 right-2.5 h-4 w-4 -translate-y-1/2 text-[#d5dbdb]" />
+          <span className="pointer-events-none absolute top-1/2 right-2.5 flex -translate-y-1/2 items-center gap-1.5 text-[13px] font-bold text-[#d5dbdb]">
+            <AmazonQSearchIcon className="h-4 w-4" />
+            Ask Amazon Q
+          </span>
         </label>
       </div>
 
@@ -120,17 +150,26 @@ export function GlobalNav({ session }: { session: ConsoleSession }) {
         </button>
 
         <IconButton label="CloudShell" className="hidden sm:inline-flex">
-          <SquareTerminal className="h-[18px] w-[18px]" strokeWidth={2.25} />
+          <CloudShellIcon className="h-[18px] w-[18px]" />
         </IconButton>
         <NavDivider className="hidden sm:block" />
 
-        <IconButton label="Notifications">
-          <Bell className="h-[18px] w-[18px]" strokeWidth={2.25} />
-        </IconButton>
+        <div ref={notificationsRef} className="relative">
+          <NotificationNavButton
+            open={notificationsOpen}
+            onToggle={() => {
+              setNotificationsOpen((value) => !value);
+              setSettingsOpen(false);
+              setAccountOpen(false);
+              setRegionOpen(false);
+            }}
+            onClose={() => setNotificationsOpen(false)}
+          />
+        </div>
         <NavDivider />
 
         <IconButton label="Help">
-          <CircleHelp className="h-[18px] w-[18px]" strokeWidth={2.25} />
+          <HelpIcon className="h-[18px] w-[18px]" />
         </IconButton>
         <NavDivider />
 
@@ -143,12 +182,14 @@ export function GlobalNav({ session }: { session: ConsoleSession }) {
             onClick={() => {
               setSettingsOpen((value) => !value);
               setAccountOpen(false);
+              setNotificationsOpen(false);
+              setRegionOpen(false);
             }}
             className={`inline-flex h-12 w-10 items-center justify-center hover:bg-[#232f3e] ${
               settingsOpen ? "bg-[#232f3e] text-[#42b4ff]" : "text-white"
             }`}
           >
-            <Settings className="h-[18px] w-[18px]" strokeWidth={2.25} />
+            <GearIcon className="h-[18px] w-[18px]" />
           </button>
           <UserSettingsPopover
             open={settingsOpen}
@@ -157,13 +198,32 @@ export function GlobalNav({ session }: { session: ConsoleSession }) {
         </div>
         <NavDivider className="hidden sm:block" />
 
-        <button
-          type="button"
-          className="hidden h-12 items-center gap-1.5 px-3 text-[14px] font-bold text-white hover:bg-[#232f3e] sm:inline-flex"
-        >
-          Global
-          <ChevronDown className="h-3.5 w-3.5 text-[#aab7b8]" strokeWidth={2.5} />
-        </button>
+        <div ref={regionRef} className="relative hidden h-12 sm:block">
+          <button
+            type="button"
+            aria-label="Regions"
+            aria-expanded={regionOpen}
+            aria-haspopup="dialog"
+            onClick={() => {
+              setRegionOpen((value) => !value);
+              setSettingsOpen(false);
+              setAccountOpen(false);
+              setNotificationsOpen(false);
+            }}
+            className={`inline-flex h-12 items-center gap-1.5 px-3 text-[13px] font-normal hover:bg-[#232f3e] ${
+              regionOpen ? "bg-[#232f3e] text-[#42b4ff]" : "text-white"
+            }`}
+          >
+            Global
+            <CaretDownIcon
+              className={`h-2 w-2 ${regionOpen ? "rotate-180 text-[#42b4ff]" : "text-[#aab7b8]"}`}
+            />
+          </button>
+          <RegionPickerPopover
+            open={regionOpen}
+            onClose={() => setRegionOpen(false)}
+          />
+        </div>
 
         <NavDivider className="hidden sm:block" />
 
@@ -175,19 +235,21 @@ export function GlobalNav({ session }: { session: ConsoleSession }) {
             onClick={() => {
               setAccountOpen((value) => !value);
               setSettingsOpen(false);
+              setNotificationsOpen(false);
+              setRegionOpen(false);
             }}
-            className="flex h-12 min-w-[190px] flex-col justify-center px-3 text-left hover:bg-[#232f3e]"
+            className="mx-1 my-1.5 mr-2 flex h-9 min-w-[190px] flex-col justify-center px-2 text-left hover:bg-[#232f3e]"
           >
-            <span className="flex items-center justify-between gap-2">
-              <span className="max-w-[190px] truncate text-[13px] leading-[15px] font-bold text-white">
+            <span className="flex items-center justify-between gap-1.5 rounded-md bg-[#414d5c] px-2 py-[3px]">
+              <span className="max-w-[168px] truncate text-[12px] leading-[14px] font-bold text-white">
                 {session.workgroup}
               </span>
               <ChevronDown
-                className="h-3.5 w-3.5 shrink-0 text-[#aab7b8]"
+                className="h-3 w-3 shrink-0 text-[#d5dbdb]"
                 strokeWidth={2.5}
               />
             </span>
-            <span className="mt-px text-right text-[12px] leading-[14px] font-bold text-[#aab7b8]">
+            <span className="mt-0.5 pr-0.5 text-right text-[11px] leading-[13px] font-normal text-[#aab7b8]">
               {session.name}
             </span>
           </button>

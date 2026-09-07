@@ -172,7 +172,7 @@ section[id] {
   --c-button: #539fe5;
   --c-focus: #42b4ff;
   --c-danger: #eb6f6f;
-  --nav-h: 52px;
+  --nav-h: 48px;
   --crumb-h: 40px;
   --footer-h: 40px;
   --sidebar-w: 280px;
@@ -391,11 +391,11 @@ select.console-input option {
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
-  scrollbar-color: #687078 transparent;
+  scrollbar-color: #4c535d transparent;
 }
 
 .sidebar-scroll::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .sidebar-scroll::-webkit-scrollbar-track {
@@ -403,16 +403,12 @@ select.console-input option {
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb {
-  background: #687078;
+  background: #4c535d;
   border-radius: 8px;
-  border: 2px solid transparent;
-  background-clip: content-box;
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: #8d99a6;
-  background-clip: content-box;
-  border: 2px solid transparent;
+  background: #687078;
 }
 
 .console-table td {
@@ -441,6 +437,52 @@ select.console-input option {
 
 .aws-console ::-webkit-scrollbar-thumb {
   background: #3d4654;
+  border-radius: 8px;
+}
+
+.aws-console .sidebar-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #4c535d transparent;
+}
+
+.aws-console .sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.aws-console .sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.aws-console .sidebar-scroll::-webkit-scrollbar-thumb {
+  background: #4c535d;
+  border-radius: 8px;
+}
+
+.aws-console .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: #687078;
+}
+
+.region-picker-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #5f6b76 transparent;
+}
+
+.region-picker-scroll::-webkit-scrollbar,
+.aws-console .region-picker-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.region-picker-scroll::-webkit-scrollbar-track,
+.aws-console .region-picker-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.region-picker-scroll::-webkit-scrollbar-thumb,
+.aws-console .region-picker-scroll::-webkit-scrollbar-thumb {
+  background: #5f6b76;
   border-radius: 8px;
 }
 
@@ -806,6 +848,30 @@ html[data-theme="light"] .aws-console header.sticky button,
 html[data-theme="light"] .aws-console header.sticky a,
 html[data-theme="light"] .aws-console header.sticky span {
   color: inherit;
+}
+
+html[data-theme="light"] .aws-console header.sticky .region-picker-popover,
+html[data-theme="light"] .aws-console header.sticky .region-picker-popover button,
+html[data-theme="light"] .aws-console header.sticky .region-picker-popover a,
+html[data-theme="light"] .aws-console header.sticky .region-picker-popover span,
+html[data-theme="light"] .aws-console header.sticky .region-picker-popover p {
+  color: #eaeded;
+}
+
+html[data-theme="light"] .aws-console header.sticky .region-picker-popover button[aria-selected="true"] {
+  color: #0f141a;
+}
+
+html[data-theme="light"] .aws-console header.sticky .region-picker-popover .region-picker-link {
+  color: #42b4ff;
+}
+
+html[data-theme="light"] .aws-console header.sticky .region-picker-popover .region-picker-muted {
+  color: #aab7b8;
+}
+
+html[data-theme="light"] .aws-console header.sticky .region-picker-popover .region-picker-action {
+  color: #42b4ff;
 }
 
 html[data-theme="light"] .aws-console header.sticky input {

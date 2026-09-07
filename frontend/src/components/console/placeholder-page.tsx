@@ -8,19 +8,21 @@ export function PlaceholderPage({
   description?: string;
 }) {
   return (
-    <div>
-      <div className="mb-4 flex flex-wrap items-baseline gap-2">
-        <h1 className="text-[20px] leading-7 font-bold text-[var(--c-text-heading)] sm:text-[24px]">
+    <div className="flex min-h-full flex-col">
+      <div className="mb-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <h1 className="text-[22px] leading-8 font-bold text-white sm:text-[24px]">
           {title}
         </h1>
-        <a href="#" className="text-[14px]">
+        <a href="#" className="text-[14px] font-bold text-[#42b4ff] hover:underline">
           Info
         </a>
       </div>
-      <ConsoleCard>
-        <p className="text-[14px] leading-5">
+
+      <ConsoleCard className="flex min-h-[min(52vh,480px)] flex-1 flex-col items-center justify-center text-center">
+        <p className="text-[18px] leading-6 font-bold text-white">Coming soon</p>
+        <p className="mt-2 max-w-lg text-[14px] leading-5 font-bold text-[#aab7b8]">
           {description ??
-            `${title} is available in the Route 53 navigation. This page is a visual placeholder in the demo console and is not connected to AWS.`}
+            `${title} is not available in this console yet. This page matches the Route 53 navigation and will be connected later.`}
         </p>
       </ConsoleCard>
     </div>

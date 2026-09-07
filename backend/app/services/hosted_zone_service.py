@@ -15,6 +15,7 @@ from app.schemas.hosted_zone import (
     SortBy,
     SortOrder,
 )
+from app.services import notification_service
 
 _SORTABLE = {
     "name": HostedZone.name,
@@ -59,6 +60,16 @@ def create(db: Session, user: User, data: HostedZoneCreate) -> HostedZone:
         created_by=user.id,
     )
     db.add(zone)
+    db.flush()
+    notification_service.enqueue_activity(
+        db,
+        user,
+        title="Hosted zone created",
+        body=(
+            f"[Notification] Hosted zone {zone.name} was created. [ID: {zone.id}]"
+        ),
+        href=f"/hosted-zones/{zone.id}",
+    )
     db.commit()
     db.refresh(zone)
     return zone
@@ -108,6 +119,7 @@ def update(
     db: Session,
     zone_id: str,
     data: HostedZoneUpdate,
+    user: User,
 ) -> HostedZone:
     zone = get_by_id(db, zone_id)
     if zone is None:
@@ -115,6 +127,15 @@ def update(
 
     zone.comment = data.comment
     db.add(zone)
+    notification_service.enqueue_activity(
+        db,
+        user,
+        title="Hosted zone updated",
+        body=(
+            f"[Notification] Hosted zone {zone.name} was updated. [ID: {zone.id}]"
+        ),
+        href=f"/hosted-zones/{zone.id}",
+    )
     db.commit()
     db.refresh(zone)
     return zone

@@ -76,10 +76,10 @@ def update_hosted_zone(
     zone_id: str,
     body: HostedZoneUpdate,
     db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> HostedZoneOut:
     # HostedZoneNotFound -> 404 via global exception handler.
-    return hosted_zone_service.update(db, zone_id, body)
+    return hosted_zone_service.update(db, zone_id, body, current_user)
 
 
 @router.delete(

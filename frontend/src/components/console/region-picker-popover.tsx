@@ -11,36 +11,23 @@ type Region = {
 };
 
 type RegionGroup = {
-  label?: string;
+  label: string;
   regions: Region[];
 };
 
 const REGION_GROUPS: RegionGroup[] = [
   {
-    label: "US East",
+    label: "United States",
     regions: [
       { name: "N. Virginia", code: "us-east-1" },
       { name: "Ohio", code: "us-east-2" },
-    ],
-  },
-  {
-    label: "US West",
-    regions: [
       { name: "N. California", code: "us-west-1" },
       { name: "Oregon", code: "us-west-2" },
     ],
   },
   {
-    label: "Africa",
-    regions: [{ name: "Cape Town", code: "af-south-1" }],
-  },
-  {
     label: "Asia Pacific",
     regions: [
-      { name: "Hong Kong", code: "ap-east-1" },
-      { name: "Hyderabad", code: "ap-south-2" },
-      { name: "Jakarta", code: "ap-southeast-3" },
-      { name: "Melbourne", code: "ap-southeast-4" },
       { name: "Mumbai", code: "ap-south-1" },
       { name: "Osaka", code: "ap-northeast-3" },
       { name: "Seoul", code: "ap-northeast-2" },
@@ -51,10 +38,7 @@ const REGION_GROUPS: RegionGroup[] = [
   },
   {
     label: "Canada",
-    regions: [
-      { name: "Central", code: "ca-central-1" },
-      { name: "Calgary", code: "ca-west-1" },
-    ],
+    regions: [{ name: "Central", code: "ca-central-1" }],
   },
   {
     label: "Europe",
@@ -62,22 +46,8 @@ const REGION_GROUPS: RegionGroup[] = [
       { name: "Frankfurt", code: "eu-central-1" },
       { name: "Ireland", code: "eu-west-1" },
       { name: "London", code: "eu-west-2" },
-      { name: "Milan", code: "eu-south-1" },
       { name: "Paris", code: "eu-west-3" },
-      { name: "Spain", code: "eu-south-2" },
       { name: "Stockholm", code: "eu-north-1" },
-      { name: "Zurich", code: "eu-central-2" },
-    ],
-  },
-  {
-    label: "Israel",
-    regions: [{ name: "Tel Aviv", code: "il-central-1" }],
-  },
-  {
-    label: "Middle East",
-    regions: [
-      { name: "Bahrain", code: "me-south-1" },
-      { name: "UAE", code: "me-central-1" },
     ],
   },
   {
@@ -85,8 +55,6 @@ const REGION_GROUPS: RegionGroup[] = [
     regions: [{ name: "São Paulo", code: "sa-east-1" }],
   },
 ];
-
-const DISABLED_REGION_COUNT = 17;
 
 type Tab = "regions" | "local-zones";
 
@@ -134,14 +102,14 @@ export function RegionPickerPopover({
   return (
     <div
       role="dialog"
-      aria-label="Regions"
-      className="absolute top-full right-0 z-[70] w-[320px] overflow-hidden rounded-lg border border-[#687078] bg-[#1b232d] shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
+      aria-label={tab === "regions" ? "Regions" : "Local Zones"}
+      className="region-picker-popover absolute top-full right-0 z-[70] w-[300px] overflow-hidden rounded-lg border border-[#545b64] bg-[#1b232d] shadow-[0_8px_24px_rgba(0,0,0,0.55)]"
     >
       <div className="px-4 pt-3 pb-2">
         <div
           role="tablist"
           aria-label="Region type"
-          className="flex h-8 overflow-hidden rounded-full border border-[#7d8998]"
+          className="flex h-8 overflow-hidden rounded-full border border-[#d5dbdb]"
         >
           <button
             type="button"
@@ -156,7 +124,6 @@ export function RegionPickerPopover({
           >
             Regions
           </button>
-          <span className="w-px self-stretch bg-[#7d8998]" aria-hidden />
           <button
             type="button"
             role="tab"
@@ -174,14 +141,12 @@ export function RegionPickerPopover({
       </div>
 
       {tab === "regions" ? (
-        <div className="region-picker-scroll max-h-[340px] overflow-y-auto px-1">
+        <div className="region-picker-scroll max-h-[352px] overflow-y-auto overscroll-contain pb-2">
           {REGION_GROUPS.map((group) => (
             <div key={group.label}>
-              {group.label ? (
-                <p className="px-3 pt-3 pb-1 text-[12px] leading-4 font-bold text-[#aab7b8]">
-                  {group.label}
-                </p>
-              ) : null}
+              <p className="region-picker-muted px-4 pt-3 pb-1 text-[13px] leading-4 font-bold text-[#d1d5db]">
+                {group.label}
+              </p>
               <ul>
                 {group.regions.map((region) => {
                   const active = selected === region.code;
@@ -190,18 +155,18 @@ export function RegionPickerPopover({
                       <button
                         type="button"
                         onClick={() => selectRegion(region.code)}
-                        className={`flex w-full items-center gap-2 border-b border-[#2a313c] px-3 py-2 text-left ${
+                        className={`flex w-full items-center gap-2 px-4 py-[7px] text-left ${
                           active ? "bg-[#1a2838]" : "hover:bg-[#232f3e]"
                         }`}
                       >
                         <Lock
                           className="h-3.5 w-3.5 shrink-0 text-[#aab7b8]"
-                          strokeWidth={2}
+                          strokeWidth={1.75}
                         />
-                        <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-white">
+                        <span className="min-w-0 flex-1 truncate text-[13px] leading-5 text-[#eaeded]">
                           {region.name}
                         </span>
-                        <span className="shrink-0 text-[12px] text-[#aab7b8]">
+                        <span className="region-picker-muted shrink-0 text-[12px] leading-5 text-[#aab7b8]">
                           {region.code}
                         </span>
                       </button>
@@ -213,38 +178,32 @@ export function RegionPickerPopover({
           ))}
         </div>
       ) : (
-        <div className="flex min-h-[280px] flex-col items-center justify-center px-6 py-8 text-center">
+        <div className="flex min-h-[300px] flex-col items-center justify-center px-6 py-10 text-center">
           <p className="text-[16px] leading-6 font-bold text-white">
             You haven&apos;t enabled any Local Zones yet.
           </p>
-          <p className="mt-2 max-w-[260px] text-[13px] leading-5 text-[#aab7b8]">
-            Get started with AWS Local Zones Available in 35 locations across 16
-            countries.
+          <p className="region-picker-muted mt-2 text-[13px] leading-5 text-[#aab7b8]">
+            Get started with AWS Local Zones
           </p>
-          <button type="button" className="console-btn console-btn-normal mt-5 font-bold">
+          <p className="region-picker-muted text-[13px] leading-5 text-[#aab7b8]">
+            Available in 35 locations across 16 countries.
+          </p>
+          <button
+            type="button"
+            className="region-picker-action mt-5 inline-flex min-h-8 items-center justify-center rounded-full border-2 border-[#42b4ff] px-5 text-[14px] font-bold text-[#42b4ff] hover:bg-[#42b4ff]/10"
+          >
             Manage Local Zones
           </button>
         </div>
       )}
 
-      <div className="border-t border-[#2a313c] px-4 py-3">
-        {tab === "regions" ? (
-          <p className="mb-2 text-[12px] leading-4 text-[#d5dbdb]">
-            <button
-              type="button"
-              className="border-b border-dotted border-[#d5dbdb] text-inherit"
-            >
-              There are {DISABLED_REGION_COUNT} Regions that are not enabled
-            </button>{" "}
-            for this account
-          </p>
-        ) : null}
-        <div className="flex items-center gap-2 text-[13px] font-bold">
-          <button type="button" className="text-[#42b4ff] hover:underline">
+      <div className="border-t border-[#3d4853] px-4 py-3">
+        <div className="flex items-center gap-2.5 text-[13px] font-bold">
+          <button type="button" className="region-picker-link text-[#42b4ff] hover:underline">
             Manage Regions
           </button>
-          <span className="h-3 w-px bg-[#687078]" aria-hidden />
-          <button type="button" className="text-[#42b4ff] hover:underline">
+          <span className="h-3.5 w-px bg-[#687078]" aria-hidden />
+          <button type="button" className="region-picker-link text-[#42b4ff] hover:underline">
             Manage Local Zones
           </button>
         </div>

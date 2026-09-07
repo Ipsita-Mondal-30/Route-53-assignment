@@ -70,6 +70,7 @@ source = ["app"]
 branch = true
 omit = [
     "app/db/seed.py",
+    "app/db/seed_notifications.py",
 ]
 
 [tool.coverage.report]

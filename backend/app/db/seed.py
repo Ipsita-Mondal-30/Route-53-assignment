@@ -200,6 +200,9 @@ def seed_all() -> User:
     """Seed demo user and sample DNS data (when enabled)."""
     user = seed_demo_user()
     seed_demo_dns(user)
+    from app.db.seed_notifications import seed_demo_notifications
+
+    seed_demo_notifications()
     return user
 
 
