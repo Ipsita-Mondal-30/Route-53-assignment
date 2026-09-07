@@ -10,7 +10,11 @@ import {
   type ReactNode,
 } from "react";
 
-import { INITIAL_HOSTED_ZONES, generateZoneId, normalizeDomainName } from "@/lib/mock/hosted-zones";
+import {
+  INITIAL_HOSTED_ZONES,
+  generateZoneId,
+  normalizeDomainName,
+} from "@/lib/mock/hosted-zones";
 import { INITIAL_NOTIFICATIONS } from "@/lib/mock/notifications";
 import {
   INITIAL_RECORDS,
@@ -24,9 +28,10 @@ import type {
   HostedZoneType,
   RecordType,
   RoutingPolicy,
+  ZoneTag,
 } from "@/lib/mock/types";
 
-const STORAGE_KEY = "route53.mock.store";
+const STORAGE_KEY = "route53.mock.store.v2";
 
 type StoreState = {
   zones: HostedZone[];
@@ -46,6 +51,8 @@ type ZoneInput = {
   name: string;
   description: string;
   type: HostedZoneType;
+  tags?: ZoneTag[];
+  createdBy?: string;
 };
 
 type Route53Store = StoreState & {
@@ -54,6 +61,7 @@ type Route53Store = StoreState & {
   getZone: (zoneId: string) => HostedZone | undefined;
   getRecords: (zoneId: string) => DnsRecord[];
   createZone: (input: ZoneInput) => HostedZone;
+  deleteZones: (zoneIds: string[]) => void;
   createRecord: (zoneId: string, input: RecordInput) => DnsRecord;
   updateRecord: (recordId: string, input: RecordInput) => void;
   deleteRecord: (recordId: string) => void;
@@ -81,7 +89,11 @@ function loadState(): StoreState {
       return defaultState;
     }
     return {
-      zones: parsed.zones,
+      zones: parsed.zones.map((zone) => ({
+        ...zone,
+        createdBy: zone.createdBy ?? "Route 53",
+        tags: zone.tags ?? [],
+      })),
       records: parsed.records,
       notifications: parsed.notifications ?? [],
     };
@@ -129,6 +141,8 @@ export function Route53StoreProvider({ children }: { children: ReactNode }) {
       type: input.type,
       description: input.description.trim(),
       createdAt: new Date().toISOString(),
+      createdBy: input.createdBy ?? "Route 53",
+      tags: (input.tags ?? []).filter((tag) => tag.key.trim()),
     };
     const defaults = createDefaultZoneRecords(zone.id, name);
     setState((current) => ({
@@ -137,6 +151,15 @@ export function Route53StoreProvider({ children }: { children: ReactNode }) {
       records: [...defaults, ...current.records],
     }));
     return zone;
+  }, []);
+
+  const deleteZones = useCallback((zoneIds: string[]) => {
+    const idSet = new Set(zoneIds);
+    setState((current) => ({
+      ...current,
+      zones: current.zones.filter((zone) => !idSet.has(zone.id)),
+      records: current.records.filter((record) => !idSet.has(record.zoneId)),
+    }));
   }, []);
 
   const createRecord = useCallback((zoneId: string, input: RecordInput) => {
@@ -189,6 +212,7 @@ export function Route53StoreProvider({ children }: { children: ReactNode }) {
       getZone,
       getRecords,
       createZone,
+      deleteZones,
       createRecord,
       updateRecord,
       deleteRecord,
@@ -200,6 +224,7 @@ export function Route53StoreProvider({ children }: { children: ReactNode }) {
       getZone,
       getRecords,
       createZone,
+      deleteZones,
       createRecord,
       updateRecord,
       deleteRecord,

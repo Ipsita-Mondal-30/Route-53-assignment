@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type Variant = "normal" | "primary" | "link";
+type Variant = "normal" | "primary" | "orange" | "secondary" | "link";
 
 type Common = {
   children: ReactNode;
@@ -22,9 +22,13 @@ function classes(variant: Variant, className?: string) {
   const variantClass =
     variant === "primary"
       ? "console-btn-primary"
-      : variant === "link"
-        ? "console-btn-link"
-        : "console-btn-normal";
+      : variant === "orange"
+        ? "console-btn-orange"
+        : variant === "secondary"
+          ? "console-btn-secondary"
+          : variant === "link"
+            ? "console-btn-link"
+            : "console-btn-normal";
   return `console-btn ${variantClass} ${className ?? ""}`;
 }
 

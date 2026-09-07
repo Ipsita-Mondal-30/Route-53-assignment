@@ -19,12 +19,19 @@ export type RoutingPolicy =
 
 export type HostedZoneType = "Public" | "Private";
 
+export type ZoneTag = {
+  key: string;
+  value: string;
+};
+
 export type HostedZone = {
   id: string;
   name: string;
   type: HostedZoneType;
   description: string;
   createdAt: string;
+  createdBy: string;
+  tags: ZoneTag[];
 };
 
 export type DnsRecord = {

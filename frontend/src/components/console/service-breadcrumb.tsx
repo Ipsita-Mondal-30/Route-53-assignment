@@ -1,44 +1,88 @@
 "use client";
 
 import Link from "next/link";
+import { ChevronRight, Columns2, Info, Menu } from "lucide-react";
 
-import { InfoCircleIcon, MenuIcon } from "@/components/console/console-icons";
+export type BreadcrumbCrumb = {
+  label: string;
+  href?: string;
+};
 
 export function ServiceBreadcrumb({
-  current,
+  crumbs,
   onToggleSidebar,
 }: {
-  current: string;
+  crumbs: BreadcrumbCrumb[];
   onToggleSidebar: () => void;
 }) {
   return (
-    <div className="sticky top-[var(--nav-h)] z-40 flex h-[var(--crumb-h)] items-center gap-2 border-b border-[var(--c-border-subtle)] bg-[var(--c-bg)] px-2 sm:px-3">
+    <div className="sticky top-[var(--nav-h)] z-40 flex h-[var(--crumb-h)] items-center gap-3 border-b border-[#232b37] bg-[#232f3e] px-3">
       <button
         type="button"
         aria-label="Open navigation"
         onClick={onToggleSidebar}
-        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#42b4ff] text-white hover:bg-[#7ec5f5]"
+        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#42b4ff] text-white hover:bg-[#6ec4ff]"
       >
-        <MenuIcon className="h-4 w-4" />
+        <Menu className="h-4 w-4" strokeWidth={2.5} />
       </button>
-      <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-[14px]">
-        <Link href="/dashboard" className="truncate font-normal">
+
+      <nav
+        aria-label="Breadcrumb"
+        className="flex min-w-0 items-center gap-1.5 text-[14px] leading-5"
+      >
+        <Link
+          href="/dashboard"
+          className="truncate font-bold text-[#42b4ff]! underline decoration-[#42b4ff] decoration-1 underline-offset-[3px] hover:text-[#6ec4ff]!"
+        >
           Route 53
         </Link>
-        <span className="text-[#8d99a6]" aria-hidden="true">
-          &gt;
-        </span>
-        <span className="truncate text-[#c5cdd6]" aria-current="page">
-          {current}
-        </span>
+        {crumbs.map((crumb, index) => {
+          const isLast = index === crumbs.length - 1;
+          return (
+            <span
+              key={`${crumb.label}-${index}`}
+              className="flex min-w-0 items-center gap-1.5"
+            >
+              <ChevronRight
+                className="h-3.5 w-3.5 shrink-0 text-[#87919c]"
+                strokeWidth={2.5}
+              />
+              {crumb.href && !isLast ? (
+                <Link
+                  href={crumb.href}
+                  className="truncate font-bold text-[#42b4ff]! underline decoration-[#42b4ff] decoration-1 underline-offset-[3px] hover:text-[#6ec4ff]!"
+                >
+                  {crumb.label}
+                </Link>
+              ) : (
+                <span
+                  className="truncate font-bold text-white"
+                  aria-current={isLast ? "page" : undefined}
+                >
+                  {crumb.label}
+                </span>
+              )}
+            </span>
+          );
+        })}
       </nav>
-      <button
-        type="button"
-        aria-label="Info"
-        className="ml-auto inline-flex h-7 w-7 items-center justify-center text-[#d1d5db] hover:text-white"
-      >
-        <InfoCircleIcon className="h-4 w-4" />
-      </button>
+
+      <div className="ml-auto flex items-center gap-1">
+        <button
+          type="button"
+          aria-label="Split view"
+          className="inline-flex h-7 w-7 items-center justify-center text-[#aab7b8] hover:text-white"
+        >
+          <Columns2 className="h-4 w-4" strokeWidth={2.25} />
+        </button>
+        <button
+          type="button"
+          aria-label="Info"
+          className="inline-flex h-7 w-7 items-center justify-center text-[#aab7b8] hover:text-white"
+        >
+          <Info className="h-4 w-4" strokeWidth={2.25} />
+        </button>
+      </div>
     </div>
   );
 }

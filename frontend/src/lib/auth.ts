@@ -56,7 +56,7 @@ export type ConsoleSession = {
 export const DEMO_CONSOLE_SESSION: ConsoleSession = {
   id: "demo-user",
   name: "avi",
-  workgroup: "Workp... (497535504622)",
+  workgroup: "Workpunkt (497535504622)",
 };
 
 const CONSOLE_SESSION_KEY = "route53.console.session";
@@ -71,6 +71,12 @@ export function ensureConsoleSession(): ConsoleSession {
     if (raw) {
       const parsed = JSON.parse(raw) as ConsoleSession;
       if (parsed.id && parsed.name && parsed.workgroup) {
+        // Keep demo account label in sync with the current console chrome.
+        if (parsed.id === DEMO_CONSOLE_SESSION.id) {
+          const synced = { ...DEMO_CONSOLE_SESSION, name: parsed.name || DEMO_CONSOLE_SESSION.name };
+          window.localStorage.setItem(CONSOLE_SESSION_KEY, JSON.stringify(synced));
+          return synced;
+        }
         return parsed;
       }
     }

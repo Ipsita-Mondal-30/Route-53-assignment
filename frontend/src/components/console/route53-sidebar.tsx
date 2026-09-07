@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import {
-  ChevronDownIcon,
+  CaretDownIcon,
+  CaretRightIcon,
   ChevronLeftIcon,
   CloseIcon,
+  ExternalLinkIcon,
 } from "@/components/console/console-icons";
 
 type NavLink = {
@@ -73,6 +75,14 @@ const sections: NavSection[] = [
   },
 ];
 
+const externalLinks = [
+  { label: "DNS Firewall", href: "#" },
+  { label: "Application Recovery Controller", href: "#" },
+] as const;
+
+const sidebarFont =
+  'var(--font-inter), "Amazon Ember", "Helvetica Neue", Helvetica, Arial, sans-serif';
+
 function isActive(pathname: string, href: string) {
   if (href === "/dashboard") {
     return pathname === "/dashboard";
@@ -120,7 +130,7 @@ export function Route53Sidebar({
             onClick={onCloseMobile}
           />
           <aside
-            className="relative flex h-full w-[min(var(--sidebar-w),85vw)] flex-col border-r border-[var(--c-border-subtle)] bg-[var(--c-bg)] shadow-2xl"
+            className="relative flex h-full min-h-0 w-[min(var(--sidebar-w),88vw)] flex-col border-r border-[#232b37] bg-[#161d27] shadow-2xl"
             aria-label="Route 53"
           >
             <SidebarNav {...navProps} />
@@ -129,7 +139,7 @@ export function Route53Sidebar({
       ) : null}
       {collapsed ? null : (
         <aside
-          className="hidden h-full w-[var(--sidebar-w)] shrink-0 flex-col border-r border-[var(--c-border-subtle)] bg-[var(--c-bg)] lg:flex"
+          className="hidden h-full min-h-0 w-[var(--sidebar-w)] shrink-0 flex-col border-r border-[#232b37] bg-[#161d27] lg:flex"
           aria-label="Route 53"
         >
           <SidebarNav {...navProps} />
@@ -153,16 +163,19 @@ function SidebarNav({
   onCloseMobile: () => void;
 }) {
   return (
-    <>
-      <div className="flex h-10 items-center justify-between px-3">
-        <span className="text-[14px] font-bold text-[var(--c-text-heading)]">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex h-11 shrink-0 items-center justify-between px-4">
+        <span
+          className="text-[18px] leading-6 font-bold tracking-[-0.01em] text-[#eaeded]"
+          style={{ fontFamily: sidebarFont }}
+        >
           Route 53
         </span>
         <div className="flex items-center gap-1">
           <button
             type="button"
             aria-label="Close navigation"
-            className="inline-flex h-7 w-7 items-center justify-center text-[#c5cdd6] lg:hidden"
+            className="inline-flex h-8 w-8 items-center justify-center text-[#aab7b8] lg:hidden"
             onClick={onCloseMobile}
           >
             <CloseIcon className="h-4 w-4" />
@@ -170,15 +183,19 @@ function SidebarNav({
           <button
             type="button"
             aria-label="Collapse navigation"
-            className="hidden h-7 w-7 items-center justify-center text-[#c5cdd6] hover:text-white lg:inline-flex"
+            className="hidden h-8 w-8 items-center justify-center text-[#aab7b8] hover:text-[#eaeded] lg:inline-flex"
             onClick={onCollapse}
           >
             <ChevronLeftIcon className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
-      <nav className="flex-1 overflow-y-auto pb-6 text-[14px]">
-        <ul className="px-1">
+
+      <nav
+        className="sidebar-scroll min-h-0 flex-1 pb-5"
+        style={{ fontFamily: sidebarFont }}
+      >
+        <ul>
           {topLinks.map((link) => (
             <li key={link.href}>
               <SidebarLink
@@ -191,29 +208,33 @@ function SidebarNav({
             </li>
           ))}
         </ul>
+
         {sections.map((section) => {
           const openSection = expanded[section.id] ?? true;
           return (
-            <div key={section.id} className="mt-1">
+            <div key={section.id}>
               <button
                 type="button"
-                className="flex w-full items-center gap-1 px-3 py-1.5 text-left text-[13px] text-[#c5cdd6] hover:bg-[var(--c-bg-hover)]"
+                className="flex w-full items-center gap-2.5 px-4 py-2 text-left text-[15px] leading-6 font-bold text-[#eaeded] hover:bg-[#1c2430]"
                 aria-expanded={openSection}
                 onClick={() => onToggleSection(section.id)}
               >
-                <ChevronDownIcon
-                  className={`h-3 w-3 shrink-0 transition-transform ${openSection ? "" : "-rotate-90"}`}
-                />
-                {section.label}
+                {openSection ? (
+                  <CaretDownIcon className="h-[9px] w-[9px] shrink-0 text-[#9aa0a9]" />
+                ) : (
+                  <CaretRightIcon className="h-[9px] w-[9px] shrink-0 text-[#9aa0a9]" />
+                )}
+                <span>{section.label}</span>
               </button>
               {openSection ? (
-                <ul className="pb-1">
+                <ul>
                   {section.items.map((item) => (
                     <li key={item.href}>
                       <SidebarLink
                         href={item.href}
                         active={isActive(pathname, item.href)}
                         badge={item.badge}
+                        indented
                         onNavigate={onCloseMobile}
                       >
                         {item.label}
@@ -225,8 +246,21 @@ function SidebarNav({
             </div>
           );
         })}
+
+        <div className="mx-3 mt-3 border-t border-[#2a313c] pt-2">
+          {externalLinks.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              className="flex items-center gap-1.5 px-1 py-2 text-[15px] leading-6 font-normal text-[#d5dbdb]! hover:bg-[#1c2430] hover:text-[#eaeded]! hover:no-underline"
+            >
+              <span>{link.label}</span>
+              <ExternalLinkIcon className="h-3 w-3 shrink-0 text-[#9aa0a9]" />
+            </a>
+          ))}
+        </div>
       </nav>
-    </>
+    </div>
   );
 }
 
@@ -234,12 +268,14 @@ function SidebarLink({
   href,
   active,
   badge,
+  indented,
   children,
   onNavigate,
 }: {
   href: string;
   active: boolean;
   badge?: string;
+  indented?: boolean;
   children: string;
   onNavigate: () => void;
 }) {
@@ -248,15 +284,23 @@ function SidebarLink({
       href={href}
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
-      className={`flex items-center justify-between gap-2 px-3 py-[5px] hover:no-underline ${
+      className={`relative flex items-center justify-between gap-2 py-2 text-[15px] leading-6 font-normal hover:no-underline ${
+        indented ? "pr-4 pl-9" : "px-4"
+      } ${
         active
-          ? "font-normal text-[#42b4ff]! hover:text-[#42b4ff]!"
-          : "text-[#d1d5db]! hover:bg-[var(--c-bg-hover)] hover:text-[#eaeded]!"
+          ? "text-[#42b4ff]! hover:text-[#42b4ff]!"
+          : "text-[#d5dbdb]! hover:bg-[#1c2430] hover:text-[#eaeded]!"
       }`}
     >
+      {active && !indented ? (
+        <span
+          aria-hidden="true"
+          className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-sm bg-[#42b4ff]"
+        />
+      ) : null}
       <span className="truncate">{children}</span>
       {badge ? (
-        <span className="text-[12px] text-[#42b4ff] underline decoration-[#42b4ff] underline-offset-2">
+        <span className="shrink-0 text-[13px] font-normal text-[#42b4ff] underline decoration-dashed decoration-[#42b4ff] underline-offset-[3px]">
           {badge}
         </span>
       ) : null}

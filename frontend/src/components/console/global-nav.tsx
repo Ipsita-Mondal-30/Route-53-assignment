@@ -1,17 +1,20 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import {
+  Bell,
+  ChevronDown,
+  CircleHelp,
+  LayoutGrid,
+  Search,
+  Settings,
+  SquareTerminal,
+} from "lucide-react";
 
 import {
+  AmazonQIcon,
+  AmazonQSearchIcon,
   AwsWordmark,
-  BellIcon,
-  ChevronDownIcon,
-  CloudShellIcon,
-  GearIcon,
-  GridIcon,
-  HelpIcon,
-  SearchIcon,
-  ServiceHexIcon,
 } from "@/components/console/console-icons";
 import type { ConsoleSession } from "@/lib/auth";
 
@@ -46,108 +49,148 @@ export function GlobalNav({ session }: { session: ConsoleSession }) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 flex h-[var(--nav-h)] items-center gap-2 border-b border-[var(--c-border-subtle)] bg-[var(--c-bg)] px-2 text-[13px] text-[var(--c-text-heading)] sm:gap-3 sm:px-3">
-      <a href="/" className="shrink-0 px-1 text-white hover:text-white" aria-label="AWS">
-        <AwsWordmark />
-      </a>
-      <span className="hidden h-5 w-px bg-[#3d4654] sm:block" aria-hidden="true" />
-      <button
-        type="button"
-        className="hidden h-8 w-8 items-center justify-center text-white lg:inline-flex"
-        aria-label="AWS services"
-      >
-        <ServiceHexIcon className="h-[22px] w-[22px]" />
-      </button>
-      <button
-        type="button"
-        className="inline-flex h-8 w-8 items-center justify-center text-[#c5cdd6] hover:text-white"
-        aria-label="Services"
-      >
-        <GridIcon className="h-4 w-4" />
-      </button>
+    <header className="sticky top-0 z-50 flex h-12 shrink-0 items-center border-b border-[#232b37] bg-[#16191f] text-[14px] font-bold text-white">
+      <div className="flex min-w-0 flex-1 items-center">
+        <a
+          href="/"
+          className="flex h-12 shrink-0 items-center px-3 text-white hover:text-white"
+          aria-label="AWS"
+        >
+          <AwsWordmark />
+        </a>
 
-      <label className="relative mx-1 hidden min-w-0 flex-1 items-center lg:flex">
-        <span className="sr-only">Search</span>
-        <SearchIcon className="pointer-events-none absolute left-3 h-4 w-4 text-[#8d99a6]" />
-        <input
-          ref={searchRef}
-          type="search"
-          placeholder="Search"
-          className="h-8 w-full max-w-[720px] rounded-full border-0 bg-[var(--c-bg-search)] py-0 pr-24 pl-9 text-[13px] text-[var(--c-text)] outline-none placeholder:text-[#8d99a6] focus:shadow-[0_0_0_1px_#42b4ff]"
-        />
-        <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[12px] text-[#8d99a6]">
-          [Option+S]
-        </span>
-      </label>
+        <NavDivider />
 
-      <div className="ml-auto flex items-center gap-0.5 sm:gap-1 lg:ml-0">
         <button
           type="button"
-          className="inline-flex h-8 w-8 items-center justify-center text-[#c5cdd6] lg:hidden"
+          className="inline-flex h-12 w-10 shrink-0 items-center justify-center hover:bg-[#232f3e]"
+          aria-label="Amazon Q"
+        >
+          <AmazonQIcon className="h-6 w-6" />
+        </button>
+
+        <NavDivider />
+
+        <button
+          type="button"
+          className="inline-flex h-12 w-10 shrink-0 items-center justify-center text-white hover:bg-[#232f3e]"
+          aria-label="Services"
+        >
+          <LayoutGrid className="h-[18px] w-[18px]" strokeWidth={2.25} />
+        </button>
+
+        <label className="relative mx-2 hidden min-w-0 flex-1 items-center md:flex">
+          <span className="sr-only">Search</span>
+          <Search
+            className="pointer-events-none absolute left-3 z-[1] h-4 w-4 text-[#aab7b8]"
+            strokeWidth={2.25}
+          />
+          <input
+            ref={searchRef}
+            type="search"
+            placeholder="Search"
+            className="h-8 w-full max-w-[720px] rounded-md border border-[#545b64] bg-[#0f141a] py-0 pr-[108px] pl-9 text-[14px] leading-5 font-bold text-white outline-none placeholder:font-normal placeholder:text-[#aab7b8] focus:border-[#42b4ff] focus:shadow-[0_0_0_1px_#42b4ff]"
+          />
+          <span className="pointer-events-none absolute top-1/2 right-9 -translate-y-1/2 text-[12px] leading-none font-bold text-[#aab7b8]">
+            [Option+S]
+          </span>
+          <AmazonQSearchIcon className="pointer-events-none absolute top-1/2 right-2.5 h-4 w-4 -translate-y-1/2 text-[#d5dbdb]" />
+        </label>
+      </div>
+
+      <div className="ml-auto flex h-12 shrink-0 items-center">
+        <button
+          type="button"
+          className="inline-flex h-12 w-10 items-center justify-center text-white hover:bg-[#232f3e] md:hidden"
           aria-label="Search"
           onClick={() => searchRef.current?.focus()}
         >
-          <SearchIcon className="h-4 w-4" />
+          <Search className="h-[18px] w-[18px]" strokeWidth={2.25} />
         </button>
+
         <IconButton label="CloudShell" className="hidden sm:inline-flex">
-          <CloudShellIcon className="h-[16px] w-[16px]" />
+          <SquareTerminal className="h-[18px] w-[18px]" strokeWidth={2.25} />
         </IconButton>
-        <IconButton label="Notifications" className="hidden md:inline-flex">
-          <BellIcon className="h-[16px] w-[16px]" />
+        <NavDivider className="hidden sm:block" />
+
+        <IconButton label="Notifications">
+          <Bell className="h-[18px] w-[18px]" strokeWidth={2.25} />
         </IconButton>
+        <NavDivider />
+
         <IconButton label="Help">
-          <HelpIcon className="h-[16px] w-[16px]" />
+          <CircleHelp className="h-[18px] w-[18px]" strokeWidth={2.25} />
         </IconButton>
-        <IconButton label="Settings" className="hidden md:inline-flex">
-          <GearIcon className="h-[16px] w-[16px]" />
+        <NavDivider />
+
+        <IconButton label="Settings" className="hidden sm:inline-flex">
+          <Settings className="h-[18px] w-[18px]" strokeWidth={2.25} />
         </IconButton>
-      </div>
+        <NavDivider className="hidden sm:block" />
 
-      <button
-        type="button"
-        className="hidden h-8 items-center gap-1 px-1.5 text-[13px] text-[var(--c-text-heading)] hover:bg-[var(--c-bg-hover)] lg:inline-flex"
-      >
-        Global
-        <ChevronDownIcon className="h-3 w-3 text-[#8d99a6]" />
-      </button>
-
-      <div ref={accountRef} className="relative">
         <button
           type="button"
-          aria-expanded={accountOpen}
-          aria-controls={menuId}
-          onClick={() => setAccountOpen((value) => !value)}
-          className="flex h-8 max-w-[168px] items-center gap-1 px-1.5 text-left hover:bg-[var(--c-bg-hover)] sm:max-w-[210px]"
+          className="hidden h-12 items-center gap-1.5 px-3 text-[14px] font-bold text-white hover:bg-[#232f3e] sm:inline-flex"
         >
-          <span className="min-w-0 leading-[1.15]">
-            <span className="block truncate text-[11px] text-[#c5cdd6]">
-              {session.workgroup}
+          Global
+          <ChevronDown className="h-3.5 w-3.5 text-[#aab7b8]" strokeWidth={2.5} />
+        </button>
+
+        <NavDivider className="hidden sm:block" />
+
+        <div ref={accountRef} className="relative flex h-12 items-stretch">
+          <button
+            type="button"
+            aria-expanded={accountOpen}
+            aria-controls={menuId}
+            onClick={() => setAccountOpen((value) => !value)}
+            className="flex h-12 min-w-[190px] flex-col justify-center px-3 text-left hover:bg-[#232f3e]"
+          >
+            <span className="flex items-center justify-between gap-2">
+              <span className="max-w-[190px] truncate text-[13px] leading-[15px] font-bold text-white">
+                {session.workgroup}
+              </span>
+              <ChevronDown
+                className="h-3.5 w-3.5 shrink-0 text-[#aab7b8]"
+                strokeWidth={2.5}
+              />
             </span>
-            <span className="block truncate text-[12px] text-[var(--c-text-heading)]">
+            <span className="mt-px text-right text-[12px] leading-[14px] font-bold text-[#aab7b8]">
               {session.name}
             </span>
-          </span>
-          <ChevronDownIcon className="h-3 w-3 shrink-0 text-[#8d99a6]" />
-        </button>
-        {accountOpen ? (
-          <div
-            id={menuId}
-            className="absolute top-full right-0 z-50 mt-1 w-56 rounded-lg border border-[var(--c-border)] bg-[#1a212c] py-2 shadow-[0_8px_24px_rgba(0,0,0,0.45)]"
-          >
-            <p className="px-3 text-[12px] text-[#8d99a6]">Account</p>
-            <p className="px-3 pt-1 text-[13px] text-[var(--c-text-heading)]">
-              {session.workgroup}
-            </p>
-            <p className="px-3 pb-2 text-[13px]">{session.name}</p>
-            <div className="border-t border-[var(--c-border-subtle)] px-3 pt-2">
-              <a href="/" className="text-[13px]">
-                aws.amazon.com
-              </a>
+          </button>
+
+          {accountOpen ? (
+            <div
+              id={menuId}
+              className="absolute top-full right-0 z-50 w-64 border border-[#414d5c] bg-[#1b232d] py-2 shadow-[0_8px_24px_rgba(0,0,0,0.45)]"
+            >
+              <p className="px-3 text-[12px] font-bold text-[#aab7b8]">Account</p>
+              <p className="px-3 pt-1 text-[13px] font-bold text-white">
+                {session.workgroup}
+              </p>
+              <p className="px-3 pb-2 text-[13px] font-bold text-[#d1d5db]">
+                {session.name}
+              </p>
+              <div className="border-t border-[#2a313c] px-3 pt-2">
+                <a href="/" className="text-[13px] font-bold text-[#42b4ff]">
+                  aws.amazon.com
+                </a>
+              </div>
             </div>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </div>
     </header>
+  );
+}
+
+function NavDivider({ className }: { className?: string }) {
+  return (
+    <span
+      className={`mx-0 h-5 w-px shrink-0 self-center bg-[#545b64] ${className ?? ""}`}
+      aria-hidden="true"
+    />
   );
 }
 
@@ -164,7 +207,7 @@ function IconButton({
     <button
       type="button"
       aria-label={label}
-      className={`inline-flex h-8 w-8 items-center justify-center text-[#c5cdd6] hover:bg-[var(--c-bg-hover)] hover:text-white ${className ?? ""}`}
+      className={`inline-flex h-12 w-10 items-center justify-center text-white hover:bg-[#232f3e] ${className ?? ""}`}
     >
       {children}
     </button>

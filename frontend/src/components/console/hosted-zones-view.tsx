@@ -2,16 +2,28 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  ChevronLeft,
+  ChevronRight,
+  RotateCw,
+  Search,
+  Settings,
+} from "lucide-react";
 
 import { ConsoleButton } from "@/components/console/console-button";
-import { ConsoleCard } from "@/components/console/console-card";
-import { SearchIcon } from "@/components/console/console-icons";
+import { HostedZoneEmptyState } from "@/components/route53/HostedZoneEmptyState";
+import {
+  HostedZoneTable,
+  HostedZoneTableHeaderOnly,
+} from "@/components/route53/HostedZoneTable";
 import { useRoute53Store } from "@/lib/mock/store";
 
 export function HostedZonesView() {
   const router = useRouter();
-  const { zones, recordCount } = useRoute53Store();
+  const { zones, recordCount, deleteZones, hydrated } = useRoute53Store();
   const [query, setQuery] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -22,87 +34,173 @@ export function HostedZonesView() {
       (zone) =>
         zone.name.toLowerCase().includes(q) ||
         zone.description.toLowerCase().includes(q) ||
-        zone.id.toLowerCase().includes(q),
+        zone.id.toLowerCase().includes(q) ||
+        zone.type.toLowerCase().includes(q) ||
+        zone.createdBy.toLowerCase().includes(q),
     );
-  }, [query, zones]);
+  }, [query, zones, refreshKey]);
+
+  const hasSelection = selectedIds.size > 0;
+  const singleSelectedId =
+    selectedIds.size === 1 ? Array.from(selectedIds)[0] : null;
+
+  function toggleZone(zoneId: string) {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(zoneId)) {
+        next.delete(zoneId);
+      } else {
+        next.add(zoneId);
+      }
+      return next;
+    });
+  }
+
+  function onViewDetails() {
+    if (singleSelectedId) {
+      router.push(`/hosted-zones/${singleSelectedId}`);
+    }
+  }
+
+  function onEdit() {
+    if (singleSelectedId) {
+      router.push(`/hosted-zones/${singleSelectedId}`);
+    }
+  }
+
+  function onDelete() {
+    if (!hasSelection) {
+      return;
+    }
+    deleteZones(Array.from(selectedIds));
+    setSelectedIds(new Set());
+  }
+
+  const count = hydrated ? zones.length : 0;
 
   return (
-    <div>
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <div className="flex flex-wrap items-baseline gap-2">
-            <h1 className="text-[20px] leading-7 font-bold text-[var(--c-text-heading)] sm:text-[24px]">
-              Hosted zones
-            </h1>
-            <a href="#" className="text-[14px]">
-              Info
-            </a>
-          </div>
-          <p className="mt-1 max-w-3xl text-[14px] leading-5 text-[var(--c-text)]">
-            A hosted zone is a container for records, and records contain information
-            about how you want to route traffic for a specific domain.
-          </p>
+    <div className="flex min-h-full flex-col pb-2">
+      <div className="mb-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-[22px] leading-8 font-bold text-white sm:text-[24px]">
+          Hosted zones{" "}
+          <span className="font-bold text-[#d5dbdb]">({count})</span>
+        </h1>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            aria-label="Refresh"
+            className="hz-refresh-btn"
+            onClick={() => setRefreshKey((value) => value + 1)}
+          >
+            <RotateCw className="h-4 w-4" strokeWidth={2.5} />
+          </button>
+          <ConsoleButton
+            variant="secondary"
+            disabled={!singleSelectedId}
+            onClick={onViewDetails}
+            className="!font-bold"
+          >
+            View details
+          </ConsoleButton>
+          <ConsoleButton
+            variant="secondary"
+            disabled={!singleSelectedId}
+            onClick={onEdit}
+            className="!font-bold"
+          >
+            Edit
+          </ConsoleButton>
+          <ConsoleButton
+            variant="secondary"
+            disabled={!hasSelection}
+            onClick={onDelete}
+            className="!font-bold"
+          >
+            Delete
+          </ConsoleButton>
+          <ConsoleButton href="/hosted-zones/new" variant="orange" className="!font-bold">
+            Create hosted zone
+          </ConsoleButton>
         </div>
-        <ConsoleButton href="/hosted-zones/new" variant="primary">
-          Create hosted zone
-        </ConsoleButton>
       </div>
 
-      <ConsoleCard padding={false}>
-        <div className="flex flex-col gap-3 border-b border-[var(--c-border-subtle)] p-4 sm:flex-row sm:items-center">
-          <label className="relative block w-full max-w-md">
-            <span className="sr-only">Search hosted zones</span>
-            <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-[#8d99a6]" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search"
-              className="console-input pl-8"
-            />
-          </label>
-          <p className="text-[13px] text-[#8d99a6] sm:ml-auto">
-            {filtered.length} hosted zone{filtered.length === 1 ? "" : "s"}
-          </p>
+      <p className="mb-4 text-[14px] leading-5 font-bold text-[#aab7b8]">
+        Automatic mode is the current search behavior optimized for best filter
+        results.{" "}
+        <a
+          href="#"
+          className="font-bold text-[#42b4ff] underline hover:text-[#6ec4ff]"
+        >
+          To change modes go to settings.
+        </a>
+      </p>
+
+      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <label className="relative block min-w-0 flex-1">
+          <span className="sr-only">Filter hosted zones</span>
+          <Search
+            className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-[#8d99a6]"
+            strokeWidth={2.25}
+          />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Filter records by property or value"
+            className="hz-filter-input font-bold placeholder:font-normal"
+          />
+        </label>
+        <div className="flex shrink-0 items-center gap-0.5 text-[14px] font-bold text-[#aab7b8]">
+          <button
+            type="button"
+            aria-label="Previous page"
+            className="inline-flex h-7 w-7 items-center justify-center disabled:opacity-40"
+            disabled
+          >
+            <ChevronLeft className="h-4 w-4" strokeWidth={2.5} />
+          </button>
+          <span className="min-w-5 text-center font-bold text-white">1</span>
+          <button
+            type="button"
+            aria-label="Next page"
+            className="inline-flex h-7 w-7 items-center justify-center disabled:opacity-40"
+            disabled
+          >
+            <ChevronRight className="h-4 w-4" strokeWidth={2.5} />
+          </button>
+          <button
+            type="button"
+            aria-label="Table preferences"
+            className="ml-1 inline-flex h-8 w-8 items-center justify-center text-[#aab7b8] hover:text-white"
+          >
+            <Settings className="h-4 w-4" strokeWidth={2.25} />
+          </button>
         </div>
-        <div className="console-table-wrap">
-          <table className="console-table">
-            <thead>
-              <tr>
-                <th>Domain name</th>
-                <th>Type</th>
-                <th>Record count</th>
-                <th>Description</th>
-                <th>Hosted zone ID</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-10 text-center text-[#8d99a6]">
-                    No hosted zones match this search.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((zone) => (
-                  <tr
-                    key={zone.id}
-                    data-clickable="true"
-                    onClick={() => router.push(`/hosted-zones/${zone.id}`)}
-                  >
-                    <td>
-                      <span className="font-normal text-[#42b4ff]">{zone.name}</span>
-                    </td>
-                    <td>{zone.type}</td>
-                    <td>{recordCount(zone.id)}</td>
-                    <td className="max-w-[280px] truncate">{zone.description || "—"}</td>
-                    <td className="font-mono text-[13px]">{zone.id}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </ConsoleCard>
+      </div>
+
+      <div className="flex min-h-0 flex-1 flex-col">
+        {zones.length === 0 ? (
+          <>
+            <HostedZoneTableHeaderOnly />
+            <HostedZoneEmptyState />
+          </>
+        ) : filtered.length === 0 ? (
+          <>
+            <HostedZoneTableHeaderOnly />
+            <div className="flex flex-1 items-center justify-center px-4 py-16 text-[14px] font-bold text-[#aab7b8]">
+              No hosted zones match this filter.
+            </div>
+          </>
+        ) : (
+          <HostedZoneTable
+            zones={filtered}
+            recordCount={recordCount}
+            selectedIds={selectedIds}
+            onToggle={toggleZone}
+            onOpen={(zoneId) => router.push(`/hosted-zones/${zoneId}`)}
+          />
+        )}
+      </div>
     </div>
   );
 }
