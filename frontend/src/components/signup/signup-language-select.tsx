@@ -15,7 +15,13 @@ const LANGUAGES = [
 
 type Language = (typeof LANGUAGES)[number];
 
-export function SignupLanguageSelect() {
+type SignupLanguageSelectProps = {
+  className?: string;
+};
+
+export function SignupLanguageSelect({
+  className = "absolute top-4 right-6 z-30 sm:top-5 sm:right-8",
+}: SignupLanguageSelectProps) {
   const [open, setOpen] = useState(false);
   const [language, setLanguage] = useState<Language>("English");
   const rootRef = useRef<HTMLDivElement>(null);
@@ -47,13 +53,10 @@ export function SignupLanguageSelect() {
   }, [open]);
 
   return (
-    <div
-      ref={rootRef}
-      className="absolute top-4 right-6 z-30 sm:top-5 sm:right-8"
-    >
+    <div ref={rootRef} className={className || "relative"}>
       <button
         type="button"
-        className="aws-focus inline-flex items-center gap-1 text-[14px] text-[#0073bb]"
+        className="aws-focus inline-flex items-center gap-1 text-[14px] font-semibold text-[#0073bb]"
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listId}
@@ -75,7 +78,7 @@ export function SignupLanguageSelect() {
           id={listId}
           role="listbox"
           aria-label="Languages"
-          className="absolute top-full right-0 mt-1 min-w-[148px] overflow-hidden rounded-md border border-[#d5dbdb] bg-white py-1 shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
+          className="absolute top-full right-0 z-40 mt-1 min-w-[148px] overflow-hidden rounded-md border border-[#d5dbdb] bg-white py-1 shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
         >
           {LANGUAGES.map((option) => {
             const selected = option === language;

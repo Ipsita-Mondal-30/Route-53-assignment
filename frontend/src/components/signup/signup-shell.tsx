@@ -118,13 +118,13 @@ export function SignupShell() {
               Start with USD $100 in AWS credits, plus earn up to USD $100 by
               completing various activities.
             </p>
-            <div className="mt-10 flex w-full justify-center md:mt-14 md:justify-start md:pl-6">
+            <div className="mt-10 flex w-full justify-center md:mt-12 md:justify-start">
               <Image
-                src="/images/signup/rocket.png"
+                src="/images/signup/signup-rocket.png"
                 alt=""
-                width={180}
-                height={120}
-                className="h-auto w-[150px] sm:w-[170px] md:w-[180px]"
+                width={280}
+                height={282}
+                className="h-auto w-[220px] sm:w-[250px] md:w-[280px]"
                 priority
               />
             </div>
