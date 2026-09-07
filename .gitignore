@@ -11,7 +11,11 @@ node_modules
 # Backend
 __pycache__
 .pytest_cache
+.ruff_cache
+.mypy_cache
 .venv
 *.pyc
 *.db
 **/data/*.db
+backend/.env
+

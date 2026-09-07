@@ -1,27 +1,12 @@
-# Backend
+# Route 53 Clone — Backend
 
-FastAPI service for the Route 53 clone.
+Placeholder. See setup instructions after scaffolding is complete.
 
-## Setup
+## Quick start
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+cd backend
 cp .env.example .env
-```
-
-## Run
-
-```bash
-uvicorn app.main:app --reload --port 8000
-```
-
-- `GET /` — health response
-- `GET /health` — `{"status": "ok"}`
-
-## Tests
-
-```bash
-pytest
+poetry install
+poetry run uvicorn app.main:app --reload --port 8000
 ```

@@ -1,6 +1,19 @@
-.venv
+# Python
 __pycache__
-.pytest_cache
-.env
-data/*.db
 *.pyc
+.venv
+.pytest_cache
+.ruff_cache
+.mypy_cache
+
+# Env
+.env
+.env.local
+
+# Local data
+data
+*.db
+
+# Poetry
+dist
+*.egg-info

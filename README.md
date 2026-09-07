@@ -10,6 +10,8 @@ Frontend:
 Backend:
 - FastAPI
 - SQLAlchemy
+- Alembic
+- Poetry
 - SQLite
 
 ## Project Structure
@@ -24,14 +26,13 @@ Backend:
 
 ```bash
 cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
 cp .env.example .env
-uvicorn app.main:app --reload --port 8000
+poetry install
+poetry run uvicorn app.main:app --reload --port 8000
 ```
 
 The API is available at `http://localhost:8000`.
+Health: `GET /health`
 
 ### Frontend
 
@@ -64,4 +65,8 @@ Backend (`backend/.env.example`):
 
 ```text
 DATABASE_URL=sqlite:///./data/route53.db
+SESSION_SECRET=change-me-dev-secret
+SESSION_EXPIRE_MINUTES=1440
+CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+ENVIRONMENT=dev
 ```

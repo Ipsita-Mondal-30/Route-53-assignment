@@ -2,24 +2,41 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.database import engine
+from app.api.v1.router import api_router
+from app.core.config import settings
+from app.db.session import engine
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    # Startup hooks (DB warm-up, etc.) go here in later phases.
     yield
+    # Shutdown: dispose SQLAlchemy engine connections.
     engine.dispose()
 
 
-app = FastAPI(title="Route 53 Clone", lifespan=lifespan)
+def create_app() -> FastAPI:
+    application = FastAPI(
+        title="Route 53 Clone API",
+        version="0.1.0",
+        lifespan=lifespan,
+        docs_url="/docs" if settings.environment == "dev" else None,
+        redoc_url="/redoc" if settings.environment == "dev" else None,
+    )
+
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    application.include_router(api_router)
+
+    return application
 
 
-@app.get("/")
-def root() -> dict[str, str]:
-    return {"status": "ok"}
-
-
-@app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
+app = create_app()

@@ -1,6 +1,6 @@
 services:
-  backend:
-    build: ./backend
+  api:
+    build: .
     ports:
       - "8000:8000"
     environment:
@@ -10,18 +10,9 @@ services:
       CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
       ENVIRONMENT: dev
     volumes:
-      - ./backend/data:/app/data
+      - ./data:/app/data
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
       interval: 10s
       timeout: 5s
       retries: 3
-
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
-    environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
-    depends_on:
-      - backend
