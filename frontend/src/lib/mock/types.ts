@@ -7,7 +7,8 @@ export type RecordType =
   | "NS"
   | "SOA"
   | "PTR"
-  | "SRV";
+  | "SRV"
+  | "CAA";
 
 export type RoutingPolicy =
   | "Simple"
@@ -32,6 +33,8 @@ export type HostedZone = {
   createdAt: string;
   createdBy: string;
   tags: ZoneTag[];
+  /** From API `record_count` when available. */
+  recordCount?: number;
 };
 
 export type DnsRecord = {
@@ -42,6 +45,11 @@ export type DnsRecord = {
   value: string;
   ttl: number;
   routingPolicy: RoutingPolicy;
+  priority?: number;
+  weight?: number;
+  port?: number;
+  caaFlag?: number;
+  caaTag?: string;
 };
 
 export type ConsoleNotification = {

@@ -11,41 +11,26 @@ import {
 } from "react";
 
 import {
-  INITIAL_HOSTED_ZONES,
-  generateZoneId,
-  normalizeDomainName,
-} from "@/lib/mock/hosted-zones";
-import { INITIAL_NOTIFICATIONS } from "@/lib/mock/notifications";
+  createDnsRecord as apiCreateRecord,
+  deleteDnsRecord as apiDeleteRecord,
+  listDnsRecords,
+  updateDnsRecord as apiUpdateRecord,
+  type RecordInput,
+} from "@/lib/dns-records-api";
 import {
-  INITIAL_RECORDS,
-  createDefaultZoneRecords,
-  generateRecordId,
-} from "@/lib/mock/records";
+  createHostedZone as apiCreateZone,
+  deleteHostedZone as apiDeleteZone,
+  getHostedZone,
+  listHostedZones,
+} from "@/lib/hosted-zones-api";
+import { normalizeDomainName } from "@/lib/mock/hosted-zones";
 import type {
   ConsoleNotification,
   DnsRecord,
   HostedZone,
   HostedZoneType,
-  RecordType,
-  RoutingPolicy,
   ZoneTag,
 } from "@/lib/mock/types";
-
-const STORAGE_KEY = "route53.mock.store.v2";
-
-type StoreState = {
-  zones: HostedZone[];
-  records: DnsRecord[];
-  notifications: ConsoleNotification[];
-};
-
-type RecordInput = {
-  name: string;
-  type: RecordType;
-  value: string;
-  ttl: number;
-  routingPolicy: RoutingPolicy;
-};
 
 type ZoneInput = {
   name: string;
@@ -55,162 +40,170 @@ type ZoneInput = {
   createdBy?: string;
 };
 
-type Route53Store = StoreState & {
+type Route53Store = {
+  zones: HostedZone[];
+  records: DnsRecord[];
+  notifications: ConsoleNotification[];
   hydrated: boolean;
+  loading: boolean;
+  error: string | null;
+  refreshZones: () => Promise<void>;
+  refreshRecords: (zoneId: string) => Promise<void>;
   recordCount: (zoneId: string) => number;
   getZone: (zoneId: string) => HostedZone | undefined;
   getRecords: (zoneId: string) => DnsRecord[];
-  createZone: (input: ZoneInput) => HostedZone;
-  deleteZones: (zoneIds: string[]) => void;
-  createRecord: (zoneId: string, input: RecordInput) => DnsRecord;
-  updateRecord: (recordId: string, input: RecordInput) => void;
-  deleteRecord: (recordId: string) => void;
+  ensureZone: (zoneId: string) => Promise<HostedZone | null>;
+  createZone: (input: ZoneInput) => Promise<HostedZone>;
+  deleteZones: (zoneIds: string[]) => Promise<void>;
+  createRecord: (zoneId: string, input: RecordInput) => Promise<DnsRecord>;
+  updateRecord: (recordId: string, input: RecordInput) => Promise<void>;
+  deleteRecord: (recordId: string) => Promise<void>;
 };
 
 const Route53StoreContext = createContext<Route53Store | null>(null);
 
-const defaultState: StoreState = {
-  zones: INITIAL_HOSTED_ZONES,
-  records: INITIAL_RECORDS,
-  notifications: INITIAL_NOTIFICATIONS,
-};
-
-function loadState(): StoreState {
-  if (typeof window === "undefined") {
-    return defaultState;
-  }
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return defaultState;
-    }
-    const parsed = JSON.parse(raw) as StoreState;
-    if (!Array.isArray(parsed.zones) || !Array.isArray(parsed.records)) {
-      return defaultState;
-    }
-    return {
-      zones: parsed.zones.map((zone) => ({
-        ...zone,
-        createdBy: zone.createdBy ?? "Route 53",
-        tags: zone.tags ?? [],
-      })),
-      records: parsed.records,
-      notifications: parsed.notifications ?? [],
-    };
-  } catch {
-    return defaultState;
-  }
-}
-
 export function Route53StoreProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<StoreState>(defaultState);
+  const [zones, setZones] = useState<HostedZone[]>([]);
+  const [records, setRecords] = useState<DnsRecord[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setState(loadState());
-    setHydrated(true);
+  const refreshZones = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { zones: next } = await listHostedZones({ pageSize: 100 });
+      setZones(next);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load hosted zones");
+      throw err;
+    } finally {
+      setLoading(false);
+      setHydrated(true);
+    }
+  }, []);
+
+  const refreshRecords = useCallback(async (zoneId: string) => {
+    const { records: next } = await listDnsRecords(zoneId, { pageSize: 100 });
+    setRecords((current) => [
+      ...current.filter((record) => record.zoneId !== zoneId),
+      ...next,
+    ]);
   }, []);
 
   useEffect(() => {
-    if (!hydrated) {
-      return;
-    }
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [hydrated, state]);
+    void refreshZones().catch(() => {
+      /* error already stored */
+    });
+  }, [refreshZones]);
 
   const recordCount = useCallback(
-    (zoneId: string) => state.records.filter((record) => record.zoneId === zoneId).length,
-    [state.records],
+    (zoneId: string) => {
+      const zone = zones.find((item) => item.id === zoneId);
+      if (typeof zone?.recordCount === "number") {
+        return zone.recordCount;
+      }
+      return records.filter((record) => record.zoneId === zoneId).length;
+    },
+    [records, zones],
   );
 
   const getZone = useCallback(
-    (zoneId: string) => state.zones.find((zone) => zone.id === zoneId),
-    [state.zones],
+    (zoneId: string) => zones.find((zone) => zone.id === zoneId),
+    [zones],
   );
 
   const getRecords = useCallback(
-    (zoneId: string) => state.records.filter((record) => record.zoneId === zoneId),
-    [state.records],
+    (zoneId: string) => records.filter((record) => record.zoneId === zoneId),
+    [records],
   );
 
-  const createZone = useCallback((input: ZoneInput) => {
-    const name = normalizeDomainName(input.name);
-    const zone: HostedZone = {
-      id: generateZoneId(),
-      name,
+  const ensureZone = useCallback(async (zoneId: string) => {
+    try {
+      const zone = await getHostedZone(zoneId);
+      setZones((current) =>
+        current.some((item) => item.id === zone.id)
+          ? current.map((item) => (item.id === zone.id ? zone : item))
+          : [zone, ...current],
+      );
+      return zone;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const createZone = useCallback(async (input: ZoneInput) => {
+    const zone = await apiCreateZone({
+      name: normalizeDomainName(input.name),
+      description: input.description.slice(0, 256),
       type: input.type,
-      description: input.description.trim(),
-      createdAt: new Date().toISOString(),
-      createdBy: input.createdBy ?? "Route 53",
-      tags: (input.tags ?? []).filter((tag) => tag.key.trim()),
-    };
-    const defaults = createDefaultZoneRecords(zone.id, name);
-    setState((current) => ({
-      ...current,
-      zones: [zone, ...current.zones],
-      records: [...defaults, ...current.records],
-    }));
+    });
+    setZones((current) => [zone, ...current.filter((item) => item.id !== zone.id)]);
     return zone;
   }, []);
 
-  const deleteZones = useCallback((zoneIds: string[]) => {
+  const deleteZones = useCallback(async (zoneIds: string[]) => {
+    await Promise.all(zoneIds.map((id) => apiDeleteZone(id)));
     const idSet = new Set(zoneIds);
-    setState((current) => ({
-      ...current,
-      zones: current.zones.filter((zone) => !idSet.has(zone.id)),
-      records: current.records.filter((record) => !idSet.has(record.zoneId)),
-    }));
+    setZones((current) => current.filter((zone) => !idSet.has(zone.id)));
+    setRecords((current) => current.filter((record) => !idSet.has(record.zoneId)));
   }, []);
 
-  const createRecord = useCallback((zoneId: string, input: RecordInput) => {
-    const record: DnsRecord = {
-      id: generateRecordId(),
-      zoneId,
-      name: input.name.trim(),
-      type: input.type,
-      value: input.value.trim(),
-      ttl: input.ttl,
-      routingPolicy: input.routingPolicy,
-    };
-    setState((current) => ({
-      ...current,
-      records: [record, ...current.records],
-    }));
+  const createRecord = useCallback(async (zoneId: string, input: RecordInput) => {
+    const record = await apiCreateRecord(zoneId, input);
+    setRecords((current) => [record, ...current]);
+    setZones((current) =>
+      current.map((zone) =>
+        zone.id === zoneId
+          ? { ...zone, recordCount: (zone.recordCount ?? 0) + 1 }
+          : zone,
+      ),
+    );
     return record;
   }, []);
 
-  const updateRecord = useCallback((recordId: string, input: RecordInput) => {
-    setState((current) => ({
-      ...current,
-      records: current.records.map((record) =>
-        record.id === recordId
-          ? {
-              ...record,
-              name: input.name.trim(),
-              type: input.type,
-              value: input.value.trim(),
-              ttl: input.ttl,
-              routingPolicy: input.routingPolicy,
-            }
-          : record,
-      ),
-    }));
+  const updateRecord = useCallback(async (recordId: string, input: RecordInput) => {
+    const updated = await apiUpdateRecord(recordId, input);
+    setRecords((current) =>
+      current.map((record) => (record.id === recordId ? updated : record)),
+    );
   }, []);
 
-  const deleteRecord = useCallback((recordId: string) => {
-    setState((current) => ({
-      ...current,
-      records: current.records.filter((record) => record.id !== recordId),
-    }));
+  const deleteRecord = useCallback(async (recordId: string) => {
+    await apiDeleteRecord(recordId);
+    setRecords((current) => {
+      const existing = current.find((record) => record.id === recordId);
+      if (existing) {
+        setZones((zonesCurrent) =>
+          zonesCurrent.map((zone) =>
+            zone.id === existing.zoneId
+              ? {
+                  ...zone,
+                  recordCount: Math.max(0, (zone.recordCount ?? 1) - 1),
+                }
+              : zone,
+          ),
+        );
+      }
+      return current.filter((record) => record.id !== recordId);
+    });
   }, []);
 
   const value = useMemo<Route53Store>(
     () => ({
-      ...state,
+      zones,
+      records,
+      notifications: [],
       hydrated,
+      loading,
+      error,
+      refreshZones,
+      refreshRecords,
       recordCount,
       getZone,
       getRecords,
+      ensureZone,
       createZone,
       deleteZones,
       createRecord,
@@ -218,11 +211,17 @@ export function Route53StoreProvider({ children }: { children: ReactNode }) {
       deleteRecord,
     }),
     [
-      state,
+      zones,
+      records,
       hydrated,
+      loading,
+      error,
+      refreshZones,
+      refreshRecords,
       recordCount,
       getZone,
       getRecords,
+      ensureZone,
       createZone,
       deleteZones,
       createRecord,

@@ -113,9 +113,10 @@ function ConsoleShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const { getZone } = useRoute53Store();
+  const { getZone, ensureZone } = useRoute53Store();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [zoneName, setZoneName] = useState<string | undefined>();
 
   useEffect(() => {
     setMobileOpen(false);
@@ -132,7 +133,28 @@ function ConsoleShell({
   }, []);
 
   const zoneId = zoneIdFromPath(pathname);
-  const zoneName = zoneId ? getZone(zoneId)?.name : undefined;
+
+  useEffect(() => {
+    if (!zoneId) {
+      setZoneName(undefined);
+      return;
+    }
+    const cached = getZone(zoneId);
+    if (cached) {
+      setZoneName(cached.name);
+      return;
+    }
+    let cancelled = false;
+    void ensureZone(zoneId).then((zone) => {
+      if (!cancelled) {
+        setZoneName(zone?.name);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [ensureZone, getZone, zoneId]);
+
   const crumbs = useMemo(
     () => crumbsForPath(pathname, zoneName),
     [pathname, zoneName],

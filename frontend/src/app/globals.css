@@ -229,12 +229,12 @@ section[id] {
 
 .console-btn-normal {
   background: transparent;
-  border: 2px solid #539fe5;
+  border: 2px solid #42b4ff;
   color: #eaeded !important;
 }
 
 .console-btn-normal:hover:not(:disabled) {
-  background: rgba(83, 159, 229, 0.14);
+  background: rgba(66, 180, 255, 0.14);
   color: #fff !important;
 }
 
@@ -283,6 +283,44 @@ section[id] {
   border-color: #414d5c;
   color: #687078 !important;
   opacity: 1;
+}
+
+.hz-btn-grey {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 4px 16px;
+  border-radius: 20px;
+  border: 2px solid #545b64;
+  background: #414d5c;
+  color: #eaeded;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.hz-btn-grey:hover:not(:disabled) {
+  background: #4d5a6a;
+}
+
+.hz-btn-grey:disabled {
+  background: #2a313c;
+  border-color: #2a313c;
+  color: #687078;
+  cursor: not-allowed;
+}
+
+.hz-tabs .hz-tab {
+  position: relative;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+}
+
+.hz-tabs .hz-tab-active {
+  border-bottom-color: #42b4ff;
 }
 
 .console-btn-link {
@@ -410,7 +448,8 @@ select.console-input option {
 .hz-table {
   width: 100%;
   min-width: 920px;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 14px;
   line-height: 20px;
 }
@@ -421,8 +460,8 @@ select.console-input option {
   font-weight: 700;
   color: #ffffff;
   background: transparent;
-  border-bottom: 1px solid #414d5c;
-  border-top: 1px solid #414d5c;
+  border-bottom: 1px solid #545b64;
+  border-top: 1px solid #545b64;
   padding: 10px 12px;
   white-space: nowrap;
   user-select: none;
@@ -432,10 +471,10 @@ select.console-input option {
   content: "";
   position: absolute;
   left: 0;
-  top: 8px;
-  bottom: 8px;
+  top: 4px;
+  bottom: 4px;
   width: 1px;
-  background: #545b64;
+  background: #7d8998;
 }
 
 .hz-table thead th.hz-check-col::before {
@@ -443,10 +482,32 @@ select.console-input option {
 }
 
 .hz-table tbody td {
-  border-bottom: 1px solid var(--c-border-subtle);
-  padding: 8px 12px;
+  border-bottom: 1px solid #2a313c;
+  padding: 10px 12px;
   color: var(--c-text);
-  vertical-align: middle;
+  vertical-align: top;
+}
+
+.hz-records-table tbody tr {
+  position: relative;
+}
+
+.hz-records-table tbody tr[data-selected="true"] td {
+  background: rgba(15, 35, 55, 0.9);
+  border-top: 2px solid #42b4ff;
+  border-bottom: 2px solid #42b4ff;
+}
+
+.hz-records-table tbody tr[data-selected="true"] td:first-child {
+  border-left: 2px solid #42b4ff;
+}
+
+.hz-records-table tbody tr[data-selected="true"] td:last-child {
+  border-right: 2px solid #42b4ff;
+}
+
+.hz-records-table tbody tr[data-selected="true"]:hover td {
+  background: rgba(66, 180, 255, 0.1);
 }
 
 .hz-table tbody tr[data-selected="true"] td {
@@ -603,4 +664,85 @@ select.console-input option {
 .hz-input-error {
   border-color: #eb6f6f !important;
   box-shadow: 0 0 0 1px #eb6f6f !important;
+}
+
+.rd-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  color: #42b4ff;
+  flex-shrink: 0;
+}
+
+.rd-copy-btn:hover {
+  color: #7ec8ff;
+}
+
+.rd-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 12px 12px 14px;
+  border: 2px solid #f4d03f;
+  border-radius: 8px;
+  background: rgba(244, 208, 63, 0.08);
+}
+
+.rd-toggle {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  border: none;
+  border-radius: 10px;
+  background: #545b64;
+  cursor: pointer;
+}
+
+.rd-toggle::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  transition: transform 120ms ease;
+}
+
+.rd-toggle[data-on="true"] {
+  background: #42b4ff;
+}
+
+.rd-toggle[data-on="true"]::after {
+  transform: translateX(16px);
+}
+
+.rd-ttl-chip {
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 2px solid #687078;
+  border-radius: 8px;
+  background: transparent;
+  color: #eaeded;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.rd-ttl-chip:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: #8d99a6;
+}
+
+.rd-collapsed-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 16px;
+  border-top: 1px solid #687078;
+  background: #161d27;
 }

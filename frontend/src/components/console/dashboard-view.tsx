@@ -12,7 +12,7 @@ import {
   RefreshIcon,
   SearchIcon,
 } from "@/components/console/console-icons";
-import { useRoute53Store } from "@/lib/mock/store";
+import type { ConsoleNotification } from "@/lib/mock/types";
 
 const actions = [
   {
@@ -60,7 +60,7 @@ function isLikelyDomain(value: string) {
 }
 
 export function DashboardView() {
-  const { notifications } = useRoute53Store();
+  const notifications: ConsoleNotification[] = [];
   const [domain, setDomain] = useState("");
   const [checkMessage, setCheckMessage] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -80,8 +80,8 @@ export function DashboardView() {
     const taken = /example\.com|amazon\.com|aws\.amazon/i.test(value);
     setCheckMessage(
       taken
-        ? `${value} is not available in this demo.`
-        : `${value} appears to be available. Domain registration is simulated.`,
+        ? `${value} is not available.`
+        : `${value} appears to be available. Domain registration is not connected yet.`,
     );
   }
 

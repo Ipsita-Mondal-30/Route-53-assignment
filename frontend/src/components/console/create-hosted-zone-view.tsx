@@ -14,6 +14,7 @@ import {
   type InfoTopic,
 } from "@/components/route53/HostedZoneInfoPanel";
 import { HostedZoneTags } from "@/components/route53/HostedZoneTags";
+import { ApiError } from "@/lib/api";
 import {
   isValidDomainName,
   normalizeDomainName,
@@ -36,7 +37,7 @@ export function CreateHostedZoneView() {
     setInfoTopic(topic);
   }
 
-  function onSubmit(event: FormEvent) {
+  async function onSubmit(event: FormEvent) {
     event.preventDefault();
     const domain = normalizeDomainName(name);
     if (!domain) {
@@ -56,19 +57,32 @@ export function CreateHostedZoneView() {
     }
 
     setSubmitting(true);
-    const zone = createZone({
-      name: domain,
-      description: description.slice(0, 256),
-      type,
-      tags,
-      createdBy: "Route 53",
-    });
+    setDomainError(null);
     try {
-      sessionStorage.setItem(`route53.zone.created.${zone.id}`, "1");
-    } catch {
-      /* ignore */
+      const zone = await createZone({
+        name: domain,
+        description: description.slice(0, 256),
+        type,
+        tags,
+        createdBy: "Route 53",
+      });
+      try {
+        sessionStorage.setItem(`route53.zone.created.${zone.id}`, "1");
+      } catch {
+        /* ignore */
+      }
+      router.push(`/hosted-zones/${zone.id}`);
+    } catch (err) {
+      setDomainError(
+        err instanceof ApiError
+          ? err.detail
+          : err instanceof Error
+            ? err.message
+            : "Failed to create hosted zone",
+      );
+      focusDomainInput();
+      setSubmitting(false);
     }
-    router.push(`/hosted-zones/${zone.id}`);
   }
 
   const panelHeight =
@@ -76,7 +90,7 @@ export function CreateHostedZoneView() {
 
   return (
     <div className="-mx-4 -my-5 flex min-h-[calc(100%+2.5rem)] sm:-mx-5 lg:-mx-6">
-      <form onSubmit={onSubmit} className="min-w-0 flex-1 overflow-auto px-4 py-5 sm:px-5 lg:px-6">
+      <form onSubmit={(event) => void onSubmit(event)} className="min-w-0 flex-1 overflow-auto px-4 py-5 sm:px-5 lg:px-6">
         <div className="mb-4 flex flex-wrap items-baseline gap-2">
           <h1 className="text-[20px] leading-7 font-bold text-white sm:text-[24px]">
             Create hosted zone

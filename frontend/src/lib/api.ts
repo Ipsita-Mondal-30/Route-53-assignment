@@ -23,7 +23,29 @@ async function parseDetail(response: Response): Promise<string> {
       return data.detail;
     }
     if (Array.isArray(data.detail)) {
-      return data.detail.map(String).join(", ");
+      return data.detail
+        .map((item) => {
+          if (typeof item === "string") {
+            return item;
+          }
+          if (item && typeof item === "object") {
+            const entry = item as { msg?: unknown; loc?: unknown };
+            if (typeof entry.msg === "string") {
+              const loc = Array.isArray(entry.loc)
+                ? entry.loc.filter((part) => part !== "body").join(".")
+                : "";
+              return loc ? `${loc}: ${entry.msg}` : entry.msg;
+            }
+            return JSON.stringify(item);
+          }
+          return String(item);
+        })
+        .join("; ");
+    }
+    if (data.detail != null) {
+      return typeof data.detail === "object"
+        ? JSON.stringify(data.detail)
+        : String(data.detail);
     }
   } catch {
     /* ignore */

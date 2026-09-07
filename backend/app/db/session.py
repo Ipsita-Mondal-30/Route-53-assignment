@@ -26,6 +26,10 @@ _ensure_sqlite_parent_dir(settings.database_url)
 connect_args: dict[str, object] = {}
 if settings.database_url.startswith("sqlite"):
     connect_args["check_same_thread"] = False
+elif settings.database_url.startswith("mysql"):
+    # Aiven (and most managed MySQL) require TLS. Empty dict enables SSL
+    # without pinning a CA path — suitable for REQUIRED mode.
+    connect_args["ssl"] = {}
 
 engine = create_engine(
     settings.database_url,

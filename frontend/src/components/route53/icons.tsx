@@ -1,13 +1,12 @@
 export function SortChevronIcon({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 10 14"
+      viewBox="0 0 10 6"
       fill="currentColor"
       aria-hidden="true"
       className={className}
     >
-      <path d="M5 1.2 8.4 5.2H1.6L5 1.2Z" opacity="0.85" />
-      <path d="M5 12.8 1.6 8.8h6.8L5 12.8Z" opacity="0.85" />
+      <path d="M5 5.2 1.2 1.2h7.6L5 5.2Z" />
     </svg>
   );
 }

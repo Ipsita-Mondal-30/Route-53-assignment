@@ -16,14 +16,24 @@ import {
   HostedZoneTable,
   HostedZoneTableHeaderOnly,
 } from "@/components/route53/HostedZoneTable";
+import { ApiError } from "@/lib/api";
 import { useRoute53Store } from "@/lib/mock/store";
 
 export function HostedZonesView() {
   const router = useRouter();
-  const { zones, recordCount, deleteZones, hydrated } = useRoute53Store();
+  const {
+    zones,
+    recordCount,
+    deleteZones,
+    hydrated,
+    loading,
+    error,
+    refreshZones,
+  } = useRoute53Store();
   const [query, setQuery] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -38,7 +48,7 @@ export function HostedZonesView() {
         zone.type.toLowerCase().includes(q) ||
         zone.createdBy.toLowerCase().includes(q),
     );
-  }, [query, zones, refreshKey]);
+  }, [query, zones]);
 
   const hasSelection = selectedIds.size > 0;
   const singleSelectedId =
@@ -68,15 +78,47 @@ export function HostedZonesView() {
     }
   }
 
-  function onDelete() {
-    if (!hasSelection) {
+  async function onDelete() {
+    if (!hasSelection || busy) {
       return;
     }
-    deleteZones(Array.from(selectedIds));
-    setSelectedIds(new Set());
+    const ids = Array.from(selectedIds);
+    if (
+      !window.confirm(
+        `Delete ${ids.length} hosted zone${ids.length === 1 ? "" : "s"}? This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+    setBusy(true);
+    setActionError(null);
+    try {
+      await deleteZones(ids);
+      setSelectedIds(new Set());
+    } catch (err) {
+      setActionError(
+        err instanceof ApiError
+          ? err.detail
+          : err instanceof Error
+            ? err.message
+            : "Failed to delete hosted zones",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onRefresh() {
+    setActionError(null);
+    try {
+      await refreshZones();
+    } catch {
+      /* store keeps error */
+    }
   }
 
   const count = hydrated ? zones.length : 0;
+  const displayError = actionError || error;
 
   return (
     <div className="flex min-h-full flex-col pb-2">
@@ -91,7 +133,8 @@ export function HostedZonesView() {
             type="button"
             aria-label="Refresh"
             className="hz-refresh-btn"
-            onClick={() => setRefreshKey((value) => value + 1)}
+            disabled={loading || busy}
+            onClick={() => void onRefresh()}
           >
             <RotateCw className="h-4 w-4" strokeWidth={2.5} />
           </button>
@@ -113,8 +156,8 @@ export function HostedZonesView() {
           </ConsoleButton>
           <ConsoleButton
             variant="secondary"
-            disabled={!hasSelection}
-            onClick={onDelete}
+            disabled={!hasSelection || busy}
+            onClick={() => void onDelete()}
             className="!font-bold"
           >
             Delete
@@ -135,6 +178,12 @@ export function HostedZonesView() {
           To change modes go to settings.
         </a>
       </p>
+
+      {displayError ? (
+        <p className="mb-3 text-[14px] text-[#eb6f6f]" role="alert">
+          {displayError}
+        </p>
+      ) : null}
 
       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center">
         <label className="relative block min-w-0 flex-1">
@@ -179,7 +228,14 @@ export function HostedZonesView() {
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col">
-        {zones.length === 0 ? (
+        {!hydrated || loading ? (
+          <>
+            <HostedZoneTableHeaderOnly />
+            <div className="flex flex-1 items-center justify-center px-4 py-16 text-[14px] font-bold text-[#aab7b8]">
+              Loading hosted zones…
+            </div>
+          </>
+        ) : zones.length === 0 ? (
           <>
             <HostedZoneTableHeaderOnly />
             <HostedZoneEmptyState />
