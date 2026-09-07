@@ -5,6 +5,7 @@ import { useEffect, type ReactNode } from "react";
 
 export type InfoTopic =
   | "create"
+  | "edit"
   | "domain"
   | "description"
   | "type"
@@ -39,6 +40,19 @@ const CONTENT: Record<InfoTopic, InfoContent> = {
       { label: "Working with hosted zones", href: "#" },
       { label: "Choosing between alias and non-alias records", href: "#" },
     ],
+  },
+  edit: {
+    title: "Edit hosted zone",
+    intro:
+      "You can change the description and tags for a hosted zone. You cannot change the domain name or type after the hosted zone is created.",
+    bullets: [
+      <>
+        The description helps you distinguish hosted zones that have the same domain name.
+      </>,
+      <>The description can have up to 256 characters.</>,
+      <>Apply tags to hosted zones to help organize and identify them.</>,
+    ],
+    learnMore: [{ label: "Working with hosted zones", href: "#" }],
   },
   domain: {
     title: "Domain name",

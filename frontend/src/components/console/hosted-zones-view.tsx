@@ -16,6 +16,7 @@ import {
   HostedZoneTable,
   HostedZoneTableHeaderOnly,
 } from "@/components/route53/HostedZoneTable";
+import { HostedZonesListSkeleton } from "@/components/console/skeleton";
 import { ApiError } from "@/lib/api";
 import { useRoute53Store } from "@/lib/mock/store";
 
@@ -231,9 +232,7 @@ export function HostedZonesView() {
         {!hydrated || loading ? (
           <>
             <HostedZoneTableHeaderOnly />
-            <div className="flex flex-1 items-center justify-center px-4 py-16 text-[14px] font-bold text-[#aab7b8]">
-              Loading hosted zones…
-            </div>
+            <HostedZonesListSkeleton />
           </>
         ) : zones.length === 0 ? (
           <>

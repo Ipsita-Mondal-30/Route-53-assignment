@@ -22,6 +22,7 @@ import {
   deleteHostedZone as apiDeleteZone,
   getHostedZone,
   listHostedZones,
+  updateHostedZone as apiUpdateZone,
 } from "@/lib/hosted-zones-api";
 import { normalizeDomainName } from "@/lib/mock/hosted-zones";
 import type {
@@ -54,6 +55,10 @@ type Route53Store = {
   getRecords: (zoneId: string) => DnsRecord[];
   ensureZone: (zoneId: string) => Promise<HostedZone | null>;
   createZone: (input: ZoneInput) => Promise<HostedZone>;
+  updateZone: (
+    zoneId: string,
+    input: { description: string; tags?: ZoneTag[] },
+  ) => Promise<HostedZone>;
   deleteZones: (zoneIds: string[]) => Promise<void>;
   createRecord: (zoneId: string, input: RecordInput) => Promise<DnsRecord>;
   updateRecord: (recordId: string, input: RecordInput) => Promise<void>;
@@ -122,11 +127,16 @@ export function Route53StoreProvider({ children }: { children: ReactNode }) {
   const ensureZone = useCallback(async (zoneId: string) => {
     try {
       const zone = await getHostedZone(zoneId);
-      setZones((current) =>
-        current.some((item) => item.id === zone.id)
-          ? current.map((item) => (item.id === zone.id ? zone : item))
-          : [zone, ...current],
-      );
+      setZones((current) => {
+        const existing = current.find((item) => item.id === zone.id);
+        const merged = {
+          ...zone,
+          tags: existing?.tags?.length ? existing.tags : zone.tags,
+        };
+        return current.some((item) => item.id === zone.id)
+          ? current.map((item) => (item.id === zone.id ? merged : item))
+          : [merged, ...current];
+      });
       return zone;
     } catch {
       return null;
@@ -142,6 +152,23 @@ export function Route53StoreProvider({ children }: { children: ReactNode }) {
     setZones((current) => [zone, ...current.filter((item) => item.id !== zone.id)]);
     return zone;
   }, []);
+
+  const updateZone = useCallback(
+    async (zoneId: string, input: { description: string; tags?: ZoneTag[] }) => {
+      const zone = await apiUpdateZone(zoneId, {
+        description: input.description.slice(0, 256),
+      });
+      const next: HostedZone = {
+        ...zone,
+        tags: input.tags ?? zone.tags,
+      };
+      setZones((current) =>
+        current.map((item) => (item.id === zoneId ? next : item)),
+      );
+      return next;
+    },
+    [],
+  );
 
   const deleteZones = useCallback(async (zoneIds: string[]) => {
     await Promise.all(zoneIds.map((id) => apiDeleteZone(id)));
@@ -205,6 +232,7 @@ export function Route53StoreProvider({ children }: { children: ReactNode }) {
       getRecords,
       ensureZone,
       createZone,
+      updateZone,
       deleteZones,
       createRecord,
       updateRecord,
@@ -223,6 +251,7 @@ export function Route53StoreProvider({ children }: { children: ReactNode }) {
       getRecords,
       ensureZone,
       createZone,
+      updateZone,
       deleteZones,
       createRecord,
       updateRecord,

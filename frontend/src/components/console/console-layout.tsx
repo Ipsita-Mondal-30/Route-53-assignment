@@ -10,18 +10,38 @@ import {
   ServiceBreadcrumb,
   type BreadcrumbCrumb,
 } from "@/components/console/service-breadcrumb";
+import { ConsoleBootSkeleton } from "@/components/console/skeleton";
 import {
   DEMO_CONSOLE_SESSION,
   fetchCurrentUser,
   type ConsoleSession,
 } from "@/lib/auth";
 import { Route53StoreProvider, useRoute53Store } from "@/lib/mock/store";
+import { UserSettingsProvider, useUserSettings } from "@/lib/user-settings";
 
-function crumbsForPath(pathname: string, zoneName?: string): BreadcrumbCrumb[] {
+function crumbsForPath(
+  pathname: string,
+  zoneName?: string,
+  zoneId?: string | null,
+): BreadcrumbCrumb[] {
   if (pathname === "/hosted-zones/new") {
     return [
       { label: "Hosted zones", href: "/hosted-zones" },
       { label: "Create hosted zone" },
+    ];
+  }
+  if (zoneId && pathname === `/hosted-zones/${zoneId}/create-record`) {
+    return [
+      { label: "Hosted zones", href: "/hosted-zones" },
+      { label: zoneName || "Hosted zone", href: `/hosted-zones/${zoneId}` },
+      { label: "Create record" },
+    ];
+  }
+  if (zoneId && pathname === `/hosted-zones/${zoneId}/edit`) {
+    return [
+      { label: "Hosted zones", href: "/hosted-zones" },
+      { label: zoneName || "Hosted zone", href: `/hosted-zones/${zoneId}` },
+      { label: "Edit" },
     ];
   }
   if (pathname.startsWith("/hosted-zones/") && pathname !== "/hosted-zones/new") {
@@ -32,6 +52,9 @@ function crumbsForPath(pathname: string, zoneName?: string): BreadcrumbCrumb[] {
   }
   if (pathname === "/hosted-zones") {
     return [{ label: "Hosted zones" }];
+  }
+  if (pathname === "/settings") {
+    return [{ label: "Settings" }];
   }
   if (pathname === "/health-checks") return [{ label: "Health checks" }];
   if (pathname === "/profiles") return [{ label: "Profiles" }];
@@ -92,16 +115,18 @@ export function ConsoleLayout({ children }: { children: ReactNode }) {
 
   if (!authReady) {
     return (
-      <div className="aws-console flex h-dvh items-center justify-center bg-[#161d27] text-[14px] text-[#aab7b8]">
-        Checking session…
-      </div>
+      <UserSettingsProvider>
+        <ConsoleBootSkeleton />
+      </UserSettingsProvider>
     );
   }
 
   return (
-    <Route53StoreProvider>
-      <ConsoleShell session={session}>{children}</ConsoleShell>
-    </Route53StoreProvider>
+    <UserSettingsProvider>
+      <Route53StoreProvider>
+        <ConsoleShell session={session}>{children}</ConsoleShell>
+      </Route53StoreProvider>
+    </UserSettingsProvider>
   );
 }
 
@@ -112,6 +137,7 @@ function ConsoleShell({
   session: ConsoleSession;
   children: ReactNode;
 }) {
+  const { theme } = useUserSettings();
   const pathname = usePathname();
   const { getZone, ensureZone } = useRoute53Store();
   const [collapsed, setCollapsed] = useState(false);
@@ -156,8 +182,8 @@ function ConsoleShell({
   }, [ensureZone, getZone, zoneId]);
 
   const crumbs = useMemo(
-    () => crumbsForPath(pathname, zoneName),
-    [pathname, zoneName],
+    () => crumbsForPath(pathname, zoneName, zoneId),
+    [pathname, zoneName, zoneId],
   );
 
   function toggleSidebar() {
@@ -169,7 +195,10 @@ function ConsoleShell({
   }
 
   return (
-    <div className="aws-console flex h-dvh flex-col overflow-hidden">
+    <div
+      className="aws-console flex h-dvh flex-col overflow-hidden"
+      data-theme={theme}
+    >
       <GlobalNav session={session} />
       <ServiceBreadcrumb crumbs={crumbs} onToggleSidebar={toggleSidebar} />
       <div className="flex min-h-0 min-w-0 flex-1">

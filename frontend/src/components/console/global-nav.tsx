@@ -14,6 +14,7 @@ import {
   SquareTerminal,
 } from "lucide-react";
 
+import { UserSettingsPopover } from "@/components/console/user-settings-popover";
 import {
   AmazonQIcon,
   AmazonQSearchIcon,
@@ -24,9 +25,11 @@ export function GlobalNav({ session }: { session: ConsoleSession }) {
   const router = useRouter();
   const searchRef = useRef<HTMLInputElement>(null);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const menuId = useId();
   const accountRef = useRef<HTMLDivElement>(null);
+  const settingsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -36,6 +39,7 @@ export function GlobalNav({ session }: { session: ConsoleSession }) {
       }
       if (event.key === "Escape") {
         setAccountOpen(false);
+        setSettingsOpen(false);
       }
     }
     window.addEventListener("keydown", onKey);
@@ -46,6 +50,9 @@ export function GlobalNav({ session }: { session: ConsoleSession }) {
     function onPointer(event: PointerEvent) {
       if (!accountRef.current?.contains(event.target as Node)) {
         setAccountOpen(false);
+      }
+      if (!settingsRef.current?.contains(event.target as Node)) {
+        setSettingsOpen(false);
       }
     }
     document.addEventListener("pointerdown", onPointer);
@@ -127,9 +134,27 @@ export function GlobalNav({ session }: { session: ConsoleSession }) {
         </IconButton>
         <NavDivider />
 
-        <IconButton label="Settings" className="hidden sm:inline-flex">
-          <Settings className="h-[18px] w-[18px]" strokeWidth={2.25} />
-        </IconButton>
+        <div ref={settingsRef} className="relative hidden h-12 sm:block">
+          <button
+            type="button"
+            aria-label="Settings"
+            aria-expanded={settingsOpen}
+            aria-haspopup="dialog"
+            onClick={() => {
+              setSettingsOpen((value) => !value);
+              setAccountOpen(false);
+            }}
+            className={`inline-flex h-12 w-10 items-center justify-center hover:bg-[#232f3e] ${
+              settingsOpen ? "bg-[#232f3e] text-[#42b4ff]" : "text-white"
+            }`}
+          >
+            <Settings className="h-[18px] w-[18px]" strokeWidth={2.25} />
+          </button>
+          <UserSettingsPopover
+            open={settingsOpen}
+            onClose={() => setSettingsOpen(false)}
+          />
+        </div>
         <NavDivider className="hidden sm:block" />
 
         <button
@@ -147,7 +172,10 @@ export function GlobalNav({ session }: { session: ConsoleSession }) {
             type="button"
             aria-expanded={accountOpen}
             aria-controls={menuId}
-            onClick={() => setAccountOpen((value) => !value)}
+            onClick={() => {
+              setAccountOpen((value) => !value);
+              setSettingsOpen(false);
+            }}
             className="flex h-12 min-w-[190px] flex-col justify-center px-3 text-left hover:bg-[#232f3e]"
           >
             <span className="flex items-center justify-between gap-2">

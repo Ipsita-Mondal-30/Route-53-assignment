@@ -21,10 +21,10 @@ import {
   type RecordFormState,
   type RecordPanelMode,
 } from "@/components/console/record-details-panel";
+import { HostedZoneDetailSkeleton } from "@/components/console/skeleton";
 import { InfoLink } from "@/components/route53/HostedZoneInfoPanel";
-import { SortChevronIcon } from "@/components/route53/icons";
 import { ApiError } from "@/lib/api";
-import type { DnsRecord, RecordType, RoutingPolicy } from "@/lib/mock/types";
+import type { DnsRecord } from "@/lib/mock/types";
 import { useRoute53Store } from "@/lib/mock/store";
 
 const RECORD_TYPE_OPTIONS = [
@@ -55,27 +55,6 @@ const ALIAS_OPTIONS = [
   { value: "no", label: "Non-alias" },
 ];
 
-const ROUTING: RoutingPolicy[] = [
-  "Simple",
-  "Weighted",
-  "Latency",
-  "Failover",
-  "Geolocation",
-  "Multivalue",
-];
-
-const RECORD_TYPES: RecordType[] = [
-  "A",
-  "AAAA",
-  "CNAME",
-  "MX",
-  "TXT",
-  "NS",
-  "PTR",
-  "SRV",
-  "CAA",
-];
-
 const TABS = [
   "records",
   "accelerated",
@@ -95,13 +74,13 @@ const emptyForm: RecordFormState = {
 };
 
 const CREATED_FLAG_PREFIX = "route53.zone.created.";
+const UPDATED_FLAG_PREFIX = "route53.zone.updated.";
 
 export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
   const router = useRouter();
   const {
     getZone,
     getRecords,
-    createRecord,
     updateRecord,
     deleteRecord,
     deleteZones,
@@ -118,13 +97,14 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
   const [aliasFilter, setAliasFilter] = useState("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<TabId>("records");
-  const [detailsOpen, setDetailsOpen] = useState(true);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [panelMode, setPanelMode] = useState<RecordPanelMode>("details");
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [successKind, setSuccessKind] = useState<"created" | "updated" | null>(
+    null,
+  );
   const [editing, setEditing] = useState<DnsRecord | null>(null);
-  const [creating, setCreating] = useState(false);
   const [form, setForm] = useState<RecordFormState>(emptyForm);
   const [error, setError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState(false);
@@ -134,10 +114,14 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
 
   useEffect(() => {
     try {
-      const key = `${CREATED_FLAG_PREFIX}${zoneId}`;
-      if (sessionStorage.getItem(key) === "1") {
-        sessionStorage.removeItem(key);
-        setShowSuccess(true);
+      const createdKey = `${CREATED_FLAG_PREFIX}${zoneId}`;
+      const updatedKey = `${UPDATED_FLAG_PREFIX}${zoneId}`;
+      if (sessionStorage.getItem(createdKey) === "1") {
+        sessionStorage.removeItem(createdKey);
+        setSuccessKind("created");
+      } else if (sessionStorage.getItem(updatedKey) === "1") {
+        sessionStorage.removeItem(updatedKey);
+        setSuccessKind("updated");
       }
     } catch {
       /* ignore */
@@ -246,25 +230,13 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
     );
   }
 
-  if (loadingDetail && !zone) {
-    return (
-      <div className="py-16 text-center text-[14px] text-[#aab7b8]">
-        Loading hosted zone…
-      </div>
-    );
-  }
-
-  function openCreate() {
-    setCreating(true);
-    setEditing(null);
-    setPanelMode("details");
-    setForm({ ...emptyForm, name: zone?.name ?? "" });
-    setError(null);
+  if (loadingDetail) {
+    return <HostedZoneDetailSkeleton />;
   }
 
   function openEdit(record: DnsRecord) {
     setEditing(record);
-    setCreating(false);
+    setPanelCollapsed(false);
     setPanelMode("edit");
     setForm({
       name: record.name,
@@ -283,12 +255,6 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
     setError(null);
   }
 
-  function closeForm() {
-    setCreating(false);
-    setEditing(null);
-    setError(null);
-  }
-
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     const ttl = Number(form.ttl);
@@ -304,6 +270,9 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
       setError("Enter a valid TTL.");
       return;
     }
+    if (!editing) {
+      return;
+    }
     const payload = {
       name: form.name,
       type: form.type,
@@ -314,14 +283,9 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
     setBusy(true);
     setError(null);
     try {
-      if (editing) {
-        await updateRecord(editing.id, payload);
-        setEditing(null);
-        setPanelMode("details");
-      } else {
-        await createRecord(zoneId, payload);
-        closeForm();
-      }
+      await updateRecord(editing.id, payload);
+      setEditing(null);
+      setPanelMode("details");
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -416,7 +380,6 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
   }
 
   const recordCount = records.length;
-  const showForm = creating;
   const showRecordPanel = selectedIds.size > 0;
   const nsRecord = records.find((record) => record.type === "NS");
   const deleteDisabled =
@@ -438,7 +401,32 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
     <div className="-mx-4 -my-5 flex min-h-[calc(100%+2.5rem)] flex-col sm:-mx-5 lg:-mx-6">
       <div className="flex min-h-0 flex-1">
       <div className="min-w-0 flex-1 overflow-auto px-4 py-5 sm:px-5 lg:px-6">
-        {showSuccess ? (
+        {successKind === "updated" ? (
+          <div
+            role="status"
+            className="mb-4 flex items-start gap-3 rounded-lg border border-[#1d8102] bg-[#1a472a] px-4 py-3 text-[14px] leading-[22px] text-[#d5dbdb]"
+          >
+            <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#1d8102] text-white">
+              <Check className="h-3.5 w-3.5" strokeWidth={3} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold text-white">
+                {zone?.name} was successfully updated.
+              </p>
+              <p className="text-[#d5dbdb]">
+                Hosted zone details were successfully updated.
+              </p>
+            </div>
+            <button
+              type="button"
+              aria-label="Dismiss"
+              className="shrink-0 text-[#d5dbdb] hover:text-white"
+              onClick={() => setSuccessKind(null)}
+            >
+              <X className="h-4 w-4" strokeWidth={2.5} />
+            </button>
+          </div>
+        ) : successKind === "created" ? (
           <div
             role="status"
             className="mb-4 flex items-start gap-3 rounded-lg border border-[#1d8102] bg-[#1a472a] px-4 py-3 text-[14px] leading-[22px] text-[#d5dbdb]"
@@ -455,7 +443,7 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
               type="button"
               aria-label="Dismiss"
               className="shrink-0 text-[#d5dbdb] hover:text-white"
-              onClick={() => setShowSuccess(false)}
+              onClick={() => setSuccessKind(null)}
             >
               <X className="h-4 w-4" strokeWidth={2.5} />
             </button>
@@ -494,23 +482,27 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
         </div>
 
         {/* Hosted zone details accordion */}
-        <div className="mb-5 overflow-hidden rounded-xl border border-[#545b64] bg-[#161d27]">
-          <div className="flex items-center justify-between gap-3 px-5 py-3.5">
+        <div className="mb-5 overflow-hidden rounded-lg border border-[#545b64]">
+          <div className="flex items-center justify-between gap-3 px-4 py-3">
             <button
               type="button"
-              className="inline-flex items-center gap-2 text-[16px] font-bold text-white"
+              className="inline-flex items-center gap-2 text-[16px] leading-6 font-bold text-white"
               onClick={() => setDetailsOpen((value) => !value)}
               aria-expanded={detailsOpen}
             >
-              <ChevronDown
+              <ChevronRight
                 className={`h-4 w-4 text-white transition-transform ${
-                  detailsOpen ? "" : "-rotate-90"
+                  detailsOpen ? "rotate-90" : ""
                 }`}
                 strokeWidth={2.5}
               />
               Hosted zone details
             </button>
-            <ConsoleButton variant="normal" className="min-h-8! rounded-full! px-4!">
+            <ConsoleButton
+              variant="normal"
+              href={`/hosted-zones/${zoneId}/edit`}
+              className="min-h-8! rounded-full! px-4!"
+            >
               Edit hosted zone
             </ConsoleButton>
           </div>
@@ -533,9 +525,9 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
                 <dt className="text-[12px] leading-4 font-bold text-[#aab7b8]">
                   Name servers
                 </dt>
-                <dd className="mt-1.5 space-y-0.5 font-mono text-[13px] leading-5 text-white">
+                <dd className="mt-1.5 space-y-0.5 text-[14px] leading-5 text-white">
                   {(nsRecord?.value.split("\n") ?? ["—"]).map((ns) => (
-                    <div key={ns}>{ns.replace(/\.$/, "")}</div>
+                    <div key={ns}>{ns}</div>
                   ))}
                 </dd>
               </div>
@@ -562,28 +554,22 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
         </div>
 
         {activeTab === "records" ? (
-          <div className="border border-t-0 border-[#545b64] bg-[#161d27] px-5 pt-4 pb-5">
-            {error && !showForm && panelMode !== "edit" && !pendingDelete ? (
+          <div className="pt-4 pb-5">
+            {error && panelMode !== "edit" && !pendingDelete ? (
               <p className="mb-3 text-[14px] text-[#eb6f6f]" role="alert">
                 {error}
               </p>
             ) : null}
-            <div className="mb-3 flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-baseline gap-2">
-                  <h2 className="text-[18px] leading-6 font-bold text-white">
-                    Records (
-                    {selectedIds.size > 0
-                      ? `${selectedIds.size}/${recordCount}`
-                      : recordCount}
-                    )
-                  </h2>
-                  <InfoLink onClick={() => setHelpOpen(true)} />
-                </div>
-                <p className="mt-1 max-w-[720px] text-[13px] leading-5 text-[#aab7b8]">
-                  The following table lists the existing records in {zone?.name}. You
-                  can&apos;t delete the SOA record or the NS record named {zone?.name}.
-                </p>
+            <div className="mb-3 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex flex-wrap items-baseline gap-2">
+                <h2 className="text-[18px] leading-6 font-bold text-white">
+                  Records (
+                  {selectedIds.size > 0
+                    ? `${selectedIds.size}/${recordCount}`
+                    : recordCount}
+                  )
+                </h2>
+                <InfoLink onClick={() => setHelpOpen(true)} />
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <button
@@ -606,7 +592,11 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
                 <ConsoleButton variant="normal" className="font-bold!">
                   Import zone file
                 </ConsoleButton>
-                <ConsoleButton variant="orange" onClick={openCreate} className="font-bold!">
+                <ConsoleButton
+                  variant="orange"
+                  href={`/hosted-zones/${zoneId}/create-record`}
+                  className="font-bold!"
+                >
                   Create record
                 </ConsoleButton>
               </div>
@@ -620,7 +610,7 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Filter records by property or value"
-                  className="hz-filter-input"
+                  className="hz-filter-input font-bold placeholder:font-normal"
                 />
               </label>
               <PropertyFilterDropdown
@@ -644,35 +634,46 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
                 options={ALIAS_OPTIONS}
                 widthClass="w-[180px]"
               />
-              <div className="ml-auto flex items-center gap-0.5 text-[13px] text-[#d5dbdb]">
+              <div className="ml-auto flex shrink-0 items-center gap-0.5 text-[14px] font-bold text-[#aab7b8]">
                 <button
                   type="button"
-                  className="inline-flex h-8 w-8 items-center justify-center text-[#aab7b8] hover:text-white"
+                  className="inline-flex h-7 w-7 items-center justify-center disabled:opacity-40"
                   aria-label="Previous page"
+                  disabled
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className="h-4 w-4" strokeWidth={2.5} />
                 </button>
-                <span className="inline-flex h-7 min-w-7 items-center justify-center rounded border border-[#687078] bg-[#0f141a] px-2 font-bold text-white">
-                  1
-                </span>
+                <span className="min-w-5 text-center font-bold text-white">1</span>
                 <button
                   type="button"
-                  className="inline-flex h-8 w-8 items-center justify-center text-[#aab7b8] hover:text-white"
+                  className="inline-flex h-7 w-7 items-center justify-center disabled:opacity-40"
                   aria-label="Next page"
+                  disabled
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-4 w-4" strokeWidth={2.5} />
                 </button>
                 <button
                   type="button"
-                  className="inline-flex h-8 w-8 items-center justify-center text-[#aab7b8] hover:text-white"
+                  className="ml-1 inline-flex h-8 w-8 items-center justify-center text-[#aab7b8] hover:text-white"
                   aria-label="Table settings"
                 >
-                  <Settings className="h-4 w-4" />
+                  <Settings className="h-4 w-4" strokeWidth={2.25} />
                 </button>
               </div>
             </div>
 
-            <div className="overflow-x-auto rounded border border-[#414d5c]">
+            <p className="mb-3 text-[14px] leading-5 font-bold text-[#42b4ff]">
+              Automatic mode is the current search behavior optimized for best filter
+              results.{" "}
+              <a
+                href="#"
+                className="font-bold text-[#42b4ff] underline hover:text-[#6ec4ff]"
+              >
+                To change modes go to settings.
+              </a>
+            </p>
+
+            <div className="console-table-wrap">
               <table className="hz-table hz-records-table min-w-[1280px]">
                 <thead>
                   <tr>
@@ -706,9 +707,12 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
                       "Evaluate target health",
                     ].map((column) => (
                       <th key={column}>
-                        <span className="inline-flex items-center gap-1 text-[14px] font-bold text-white">
+                        <span className="inline-flex items-center gap-1 text-[14px] leading-5 font-bold text-white">
                           {column}
-                          <SortChevronIcon className="hz-sort-icon h-3 w-2.5 text-[#42b4ff]" />
+                          <ChevronDown
+                            className="h-3.5 w-3.5 shrink-0 text-[#aab7b8]"
+                            strokeWidth={2.5}
+                          />
                         </span>
                       </th>
                     ))}
@@ -750,11 +754,14 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
                           <td className="text-white">-</td>
                           <td className="text-white">No</td>
                           <td className="max-w-[280px] align-top">
-                            <span className="block whitespace-pre-line break-all text-[13px] leading-5 text-white">
-                              {record.value
-                                .split("\n")
-                                .map((line) => line.replace(/\.$/, ""))
-                                .join("\n")}
+                            <span
+                              className={`block text-[13px] leading-5 text-white ${
+                                record.type === "NS"
+                                  ? "whitespace-pre-line break-all"
+                                  : "truncate"
+                              }`}
+                            >
+                              {record.value}
                             </span>
                           </td>
                           <td className="whitespace-nowrap text-white">
@@ -771,7 +778,7 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
             </div>
           </div>
         ) : (
-          <div className="border border-t-0 border-[#414d5c] bg-[#161d27] px-4 py-10 text-center text-[14px] text-[#aab7b8]">
+          <div className="px-0 py-10 text-center text-[14px] text-[#aab7b8]">
             {tabLabels[activeTab]} is not available in this demo.
           </div>
         )}
@@ -868,101 +875,6 @@ export function HostedZoneDetailView({ zoneId }: { zoneId: string }) {
           >
             <ChevronUp className="h-5 w-5" strokeWidth={2.25} />
           </button>
-        </div>
-      ) : null}
-
-      {showForm ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-4">
-          <div className="w-full max-w-lg rounded-xl border border-[#414d5c] bg-[#161d27] p-5 shadow-xl">
-            <h3 className="text-[18px] font-bold text-white">Create record</h3>
-            <form onSubmit={(event) => void onSubmit(event)} className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <label className="block sm:col-span-2">
-                <span className="mb-1 block text-[14px] font-bold text-white">
-                  Record name
-                </span>
-                <input
-                  className="console-input"
-                  value={form.name}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, name: event.target.value }))
-                  }
-                />
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-[14px] font-bold text-white">Type</span>
-                <select
-                  className="console-input"
-                  value={form.type}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      type: event.target.value as RecordType,
-                    }))
-                  }
-                >
-                  {RECORD_TYPES.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-[14px] font-bold text-white">TTL</span>
-                <input
-                  className="console-input"
-                  value={form.ttl}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, ttl: event.target.value }))
-                  }
-                />
-              </label>
-              <label className="block sm:col-span-2">
-                <span className="mb-1 block text-[14px] font-bold text-white">Value</span>
-                <textarea
-                  className="console-input h-24 py-2"
-                  value={form.value}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, value: event.target.value }))
-                  }
-                />
-              </label>
-              <label className="block sm:col-span-2">
-                <span className="mb-1 block text-[14px] font-bold text-white">
-                  Routing policy
-                </span>
-                <select
-                  className="console-input"
-                  value={form.routingPolicy}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      routingPolicy: event.target.value as RoutingPolicy,
-                    }))
-                  }
-                >
-                  {ROUTING.map((policy) => (
-                    <option key={policy} value={policy}>
-                      {policy}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              {error ? (
-                <p className="sm:col-span-2 text-[14px] text-[#eb6f6f]" role="alert">
-                  {error}
-                </p>
-              ) : null}
-              <div className="flex justify-end gap-2 sm:col-span-2">
-                <ConsoleButton type="button" variant="link" onClick={closeForm}>
-                  Cancel
-                </ConsoleButton>
-                <ConsoleButton type="submit" variant="orange" disabled={busy}>
-                  Create record
-                </ConsoleButton>
-              </div>
-            </form>
-          </div>
         </div>
       ) : null}
 

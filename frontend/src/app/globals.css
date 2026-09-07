@@ -746,3 +746,137 @@ select.console-input option {
   border-top: 1px solid #687078;
   background: #161d27;
 }
+
+@keyframes hz-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+.hz-skeleton {
+  background: linear-gradient(90deg, #2a313c 0%, #3d4654 45%, #2a313c 90%);
+  background-size: 200% 100%;
+  animation: hz-shimmer 1.2s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+html[data-theme="light"] .hz-skeleton {
+  background: linear-gradient(90deg, #e9ebed 0%, #f7f8f8 45%, #e9ebed 90%);
+  background-size: 200% 100%;
+}
+
+html[data-theme="light"].console-mode,
+html[data-theme="light"].console-mode body {
+  background: #ffffff;
+  color: #16191f;
+}
+
+html[data-theme="light"] .aws-console {
+  --c-bg: #ffffff;
+  --c-bg-elevated: #f2f3f3;
+  --c-bg-input: #ffffff;
+  --c-bg-search: #f2f3f3;
+  --c-bg-table: #ffffff;
+  --c-bg-hover: #f2f3f3;
+  --c-bg-active: #f1faff;
+  --c-border: #d5dbdb;
+  --c-border-subtle: #e9ebed;
+  --c-border-input: #7d8998;
+  --c-text: #16191f;
+  --c-text-heading: #16191f;
+  --c-text-muted: #545b64;
+  --c-link: #0073bb;
+  --c-link-hover: #00a1c9;
+  --c-button: #0972d3;
+  --c-focus: #0972d3;
+  background: #ffffff;
+  color: #16191f;
+}
+
+html[data-theme="light"] .aws-console header.sticky {
+  background: #ffffff !important;
+  border-bottom-color: #d5dbdb !important;
+  color: #16191f !important;
+}
+
+html[data-theme="light"] .aws-console header.sticky button,
+html[data-theme="light"] .aws-console header.sticky a,
+html[data-theme="light"] .aws-console header.sticky span {
+  color: inherit;
+}
+
+html[data-theme="light"] .aws-console header.sticky input {
+  background: #ffffff;
+  color: #16191f;
+  border-color: #7d8998;
+}
+
+html[data-theme="light"] .aws-console .sticky.top-\[var\(--nav-h\)\] {
+  background: #f2f3f3 !important;
+  border-bottom-color: #d5dbdb !important;
+}
+
+html[data-theme="light"] .aws-console aside {
+  background: #ffffff;
+  border-color: #d5dbdb;
+  color: #16191f;
+}
+
+html[data-theme="light"] .aws-console footer {
+  background: #f2f3f3 !important;
+  border-top-color: #d5dbdb !important;
+  color: #545b64 !important;
+}
+
+html[data-theme="light"] .aws-console main .text-white,
+html[data-theme="light"] .aws-console main h1,
+html[data-theme="light"] .aws-console main h2 {
+  color: #16191f !important;
+}
+
+html[data-theme="light"] .aws-console .console-btn-normal {
+  color: #16191f !important;
+}
+
+html[data-theme="light"] .aws-console .hz-filter-input,
+html[data-theme="light"] .aws-console .console-input {
+  background: #ffffff;
+  color: #16191f;
+  border-color: #7d8998;
+}
+
+html[data-theme="light"] .aws-console .hz-table thead th,
+html[data-theme="light"] .aws-console .hz-table tbody td {
+  color: #16191f;
+  border-color: #d5dbdb;
+}
+
+html[data-theme="light"] .aws-console .hz-btn-grey {
+  background: #e9ebed;
+  border-color: #d5dbdb;
+  color: #16191f;
+}
+
+html[data-theme="light"] .aws-console .rd-collapsed-bar,
+html[data-theme="light"] .aws-console .rd-panel {
+  background: #ffffff;
+  border-color: #d5dbdb;
+}
+
+html[data-theme="light"] .user-settings-popover {
+  background: #ffffff;
+  border-color: #d5dbdb;
+}
+
+html[data-theme="light"] .user-settings-popover h2,
+html[data-theme="light"] .user-settings-popover .text-white {
+  color: #16191f !important;
+}
+
+html[data-theme="light"] .user-settings-popover button.flex.h-8 {
+  background: #ffffff;
+  color: #16191f;
+}

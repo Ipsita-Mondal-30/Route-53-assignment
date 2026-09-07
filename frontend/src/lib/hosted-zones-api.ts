@@ -80,6 +80,19 @@ export async function createHostedZone(
   return mapHostedZone(data);
 }
 
+export async function updateHostedZone(
+  zoneId: string,
+  input: { description?: string },
+): Promise<HostedZone> {
+  const data = await apiFetch<HostedZoneApi>(`/hosted-zones/${zoneId}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      comment: input.description?.trim() || null,
+    }),
+  });
+  return mapHostedZone(data);
+}
+
 export async function deleteHostedZone(zoneId: string): Promise<void> {
   await apiFetch<void>(`/hosted-zones/${zoneId}`, { method: "DELETE" });
 }
