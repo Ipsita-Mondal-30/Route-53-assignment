@@ -237,7 +237,7 @@ export function SignupShell() {
             </div>
 
             <Link
-              href="/login"
+              href="/signin"
               className="flex h-[38px] w-full items-center justify-center rounded-[20px] border-2 border-[#0073bb] bg-white text-[14px] font-bold text-[#0073bb] outline-none transition-colors hover:bg-[#f1f8ff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0073bb]"
             >
               Sign in to an existing AWS account

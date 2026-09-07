@@ -101,12 +101,16 @@ export function MultiSessionSelect() {
                 type="button"
                 role="option"
                 aria-selected={selected === option.id}
-                className={`block w-full px-4 py-2 text-left text-[14px] hover:bg-[#f2f3f3] focus-visible:bg-[#f2f3f3] focus-visible:outline-none ${
+                className={`block w-full px-4 py-2 text-left text-[14px] focus-visible:outline-none ${
                   selected === option.id
-                    ? "bg-[#f2f3f3] font-medium text-[#161e2d]"
-                    : "text-[#545b64]"
+                    ? "cursor-default bg-[#f2f3f3] text-[#aab7b8]"
+                    : "text-[#161e2d] hover:bg-[#f2f3f3] focus-visible:bg-[#f2f3f3]"
                 }`}
                 onClick={() => {
+                  if (selected === option.id) {
+                    setOpen(false);
+                    return;
+                  }
                   setSelected(option.id);
                   setOpen(false);
                 }}
