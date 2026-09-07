@@ -1,8 +1,22 @@
 """ORM models package.
 
-Import model modules here once they exist so Alembic can discover metadata.
+Import all model modules so Alembic and metadata discovery see every table.
 """
 
 from app.db.base import Base
 
-__all__ = ["Base"]
+# Register DnsRecord <-> HostedZone.record_count sync listeners.
+from app.models import events as _events  # noqa: F401
+from app.models.dns_record import DnsRecord
+from app.models.hosted_zone import HostedZone, generate_hosted_zone_id
+from app.models.session import Session
+from app.models.user import User
+
+__all__ = [
+    "Base",
+    "DnsRecord",
+    "HostedZone",
+    "Session",
+    "User",
+    "generate_hosted_zone_id",
+]
