@@ -5,10 +5,13 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import ConflictError
 from app.core.security import (
     generate_session_token,
+    hash_password,
     session_expiry,
     verify_password,
 )
@@ -28,6 +31,23 @@ def authenticate_user(db: Session, email: str, password: str) -> User:
     user = get_user_by_email(db, email)
     if user is None or not verify_password(password, user.password_hash):
         raise AuthError("Invalid email or password")
+    return user
+
+
+def register_user(db: Session, email: str, password: str) -> User:
+    """Create a new user. Emails are stored lowercased and must be unique."""
+    normalized = email.lower().strip()
+    if get_user_by_email(db, normalized) is not None:
+        raise ConflictError("An account with this email already exists.")
+
+    user = User(email=normalized, password_hash=hash_password(password))
+    db.add(user)
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise ConflictError("An account with this email already exists.") from exc
+    db.refresh(user)
     return user
 
 

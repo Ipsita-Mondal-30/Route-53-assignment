@@ -95,6 +95,19 @@ export async function loginWithPassword(
   return session;
 }
 
+export async function signupWithPassword(
+  email: string,
+  password: string,
+): Promise<ConsoleSession> {
+  const user = await apiFetch<AuthUser>("/auth/signup", {
+    method: "POST",
+    body: JSON.stringify({ email: email.trim(), password }),
+  });
+  const session = userToConsoleSession(user);
+  saveConsoleSession(session);
+  return session;
+}
+
 export async function logoutSession(): Promise<void> {
   try {
     await apiFetch<void>("/auth/logout", { method: "POST" });

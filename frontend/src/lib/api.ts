@@ -1,8 +1,28 @@
-const DEFAULT_API_URL = "http://localhost:8000";
+const LOCAL_API_URL = "http://localhost:8000";
+const SAME_ORIGIN_API_PREFIX = "/api/backend";
+
+function readEnvUrl(value: string | undefined): string {
+  return value?.split(",")[0]?.trim().replace(/\/$/, "") || "";
+}
+
+function isLocalHostname(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1";
+}
 
 export function getApiBaseUrl(): string {
-  const raw = process.env.NEXT_PUBLIC_API_URL?.split(",")[0]?.trim().replace(/\/$/, "");
-  return raw || DEFAULT_API_URL;
+  const configured = readEnvUrl(process.env.NEXT_PUBLIC_API_URL);
+
+  // Hosted UI (Vercel) must never call localhost or a cross-origin API —
+  // the same-origin proxy avoids CORS and keeps the session cookie first-party.
+  if (typeof window !== "undefined" && !isLocalHostname(window.location.hostname)) {
+    return SAME_ORIGIN_API_PREFIX;
+  }
+
+  if (configured) {
+    return configured;
+  }
+
+  return typeof window === "undefined" ? LOCAL_API_URL : SAME_ORIGIN_API_PREFIX;
 }
 
 export class ApiError extends Error {

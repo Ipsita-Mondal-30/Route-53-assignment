@@ -9,14 +9,15 @@ Session-authenticated DNS management API that mirrors a subset of Amazon Route 5
 
 ## Authentication
 
-1. `POST /auth/login` with `{ "email", "password" }` — sets an **httpOnly**
-   `session_id` cookie (`SameSite=Lax` on same-site; `None; Secure` when the
-   SPA and API are on different hosts).
-2. Send that cookie on subsequent requests (`credentials: include` from browsers).
-3. `POST /auth/logout` deletes the server-side session and clears the cookie.
+1. `POST /auth/signup` with `{ "email", "password" }` — creates a user, then
+   sets an **httpOnly** `session_id` cookie (same cookie rules as login).
+2. `POST /auth/login` with `{ "email", "password" }` — sets the same cookie
+   (`SameSite=Lax` on same-site; `None; Secure` when the SPA and API are on
+   different hosts).
+3. Send that cookie on subsequent requests (`credentials: include` from browsers).
+4. `POST /auth/logout` deletes the server-side session and clears the cookie.
 
-There is no JWT and no public signup — use the seeded demo user for local/demo
-environments.
+There is no JWT. Use the seeded demo user, or create an account via signup.
 
 ## Errors
 
@@ -32,8 +33,8 @@ OPENAPI_TAGS: list[dict[str, str]] = [
     {
         "name": "auth",
         "description": (
-            "Session-based login, logout, and current-user introspection. "
-            "Login is rate-limited per client IP."
+            "Session-based signup, login, logout, and current-user introspection. "
+            "Signup and login are rate-limited per client IP."
         ),
     },
     {

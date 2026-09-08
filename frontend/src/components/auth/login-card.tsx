@@ -4,26 +4,54 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { SocialLoginButtons } from "@/components/auth/social-login-buttons";
-import { ApiError } from "@/lib/api";
-import { isValidEmail, loginWithPassword } from "@/lib/auth";
+import { ApiError, getApiBaseUrl } from "@/lib/api";
+import { isValidEmail, loginWithPassword, signupWithPassword } from "@/lib/auth";
 
 const linkClass = "aws-focus text-[#00a1c9] hover:underline";
+const MIN_SIGNUP_PASSWORD_LENGTH = 8;
+const DEMO_EMAIL = "demo@example.com";
+const DEMO_PASSWORD = "DemoPass123!";
+
+type AuthMode = "signin" | "signup";
 
 export function LoginCard() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState("demo@example.com");
-  const [password, setPassword] = useState("DemoPass123!");
+  const [mode, setMode] = useState<AuthMode>("signin");
+  const [email, setEmail] = useState(DEMO_EMAIL);
+  const [password, setPassword] = useState(DEMO_PASSWORD);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const isSignup = mode === "signup";
 
   useEffect(() => {
     const fromQuery = searchParams.get("email");
     if (fromQuery) {
       setEmail(fromQuery);
     }
+    if (searchParams.get("mode") === "signup") {
+      setMode("signup");
+      setPassword("");
+      if (!fromQuery) {
+        setEmail("");
+      }
+    }
   }, [searchParams]);
+
+  function switchMode(next: AuthMode) {
+    setMode(next);
+    setError(null);
+    setMessage(null);
+    if (next === "signup") {
+      setEmail("");
+      setPassword("");
+    } else {
+      setEmail(DEMO_EMAIL);
+      setPassword(DEMO_PASSWORD);
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -37,23 +65,34 @@ export function LoginCard() {
       setError("Enter your password.");
       return;
     }
+    if (isSignup && password.length < MIN_SIGNUP_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_SIGNUP_PASSWORD_LENGTH} characters.`);
+      return;
+    }
 
     setError(null);
     setLoading(true);
 
     try {
-      await loginWithPassword(email, password);
+      if (isSignup) {
+        await signupWithPassword(email, password);
+      } else {
+        await loginWithPassword(email, password);
+      }
       const next = searchParams.get("next") || "/hosted-zones";
       router.push(next.startsWith("/") ? next : "/hosted-zones");
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.detail);
       } else if (err instanceof TypeError) {
+        const api = getApiBaseUrl();
         setError(
-          "Cannot reach the API at localhost:8000. Start the backend, then try again.",
+          api.startsWith("/")
+            ? "Cannot reach the API. Confirm the backend is live, then try again."
+            : `Cannot reach the API at ${api}. Start the backend, then try again.`,
         );
       } else {
-        setError("Unable to sign in. Try again.");
+        setError(isSignup ? "Unable to create account. Try again." : "Unable to sign in. Try again.");
       }
     } finally {
       setLoading(false);
@@ -64,7 +103,7 @@ export function LoginCard() {
     <div className="h-auto w-[calc(100%-32px)] max-w-[580px] overflow-hidden rounded-xl border border-[#414750] bg-[#161b22] shadow-[0_4px_24px_rgba(0,0,0,0.4)] sm:w-[calc(100%-40px)]">
       <div className="p-6 sm:p-7">
         <h1 className="text-[22px] leading-[1.2] font-bold tracking-tight text-white">
-          Get started
+          {isSignup ? "Create an AWS Builder ID" : "Get started"}
         </h1>
 
         <form className="mt-5" onSubmit={handleSubmit} noValidate>
@@ -102,7 +141,7 @@ export function LoginCard() {
             id="login-password"
             name="password"
             type="password"
-            autoComplete="current-password"
+            autoComplete={isSignup ? "new-password" : "current-password"}
             value={password}
             onChange={(event) => {
               setPassword(event.target.value);
@@ -124,7 +163,9 @@ export function LoginCard() {
           ) : null}
 
           <p className="mt-2 text-[12px] text-[#8d99a6]">
-            Demo: demo@example.com / DemoPass123!
+            {isSignup
+              ? "Password must be at least 8 characters."
+              : "Demo: demo@example.com / DemoPass123!"}
           </p>
 
           <button
@@ -132,7 +173,13 @@ export function LoginCard() {
             disabled={loading}
             className="mt-[18px] flex h-9 w-full items-center justify-center rounded-full bg-[#ff9900] text-[14px] font-bold text-black outline-none transition-colors hover:bg-[#ec7211] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00a1c9] disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {loading ? "Signing in…" : "Continue"}
+            {loading
+              ? isSignup
+                ? "Creating account…"
+                : "Signing in…"
+              : isSignup
+                ? "Create account"
+                : "Continue"}
           </button>
         </form>
 
@@ -145,8 +192,8 @@ export function LoginCard() {
         <SocialLoginButtons onMessage={setMessage} />
 
         <p className="mt-5 text-[13px] leading-[1.45] text-[#d1d5db]">
-          By clicking &quot;Continue&quot; or continuing with an alternative
-          sign-in method, you agree to the{" "}
+          By clicking &quot;{isSignup ? "Create account" : "Continue"}&quot; or
+          continuing with an alternative sign-in method, you agree to the{" "}
           <a href="#" className={linkClass}>
             AWS Customer Agreement
           </a>
@@ -171,16 +218,38 @@ export function LoginCard() {
         ) : null}
       </div>
 
-      <div className="flex items-center justify-center border-t border-[#414750] bg-[#12171e] px-6 py-4">
-        <button
-          type="button"
-          className="aws-focus text-[14px] font-normal text-[#00a1c9] hover:underline"
-          onClick={() =>
-            setMessage("Use demo@example.com / DemoPass123! to sign in.")
-          }
-        >
-          Trouble Signing In?
-        </button>
+      <div className="flex items-center justify-center gap-3 border-t border-[#414750] bg-[#12171e] px-6 py-4">
+        {isSignup ? (
+          <button
+            type="button"
+            className="aws-focus text-[14px] font-normal text-[#00a1c9] hover:underline"
+            onClick={() => switchMode("signin")}
+          >
+            Already have an AWS Builder ID? Sign in
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="aws-focus text-[14px] font-normal text-[#00a1c9] hover:underline"
+              onClick={() =>
+                setMessage("Use demo@example.com / DemoPass123! to sign in.")
+              }
+            >
+              Trouble Signing In?
+            </button>
+            <span aria-hidden="true" className="text-[#545b64]">
+              |
+            </span>
+            <button
+              type="button"
+              className="aws-focus text-[14px] font-normal text-[#00a1c9] hover:underline"
+              onClick={() => switchMode("signup")}
+            >
+              Create an AWS Builder ID
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

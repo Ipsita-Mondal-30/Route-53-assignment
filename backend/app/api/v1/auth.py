@@ -7,7 +7,7 @@ from app.core.exceptions import RateLimitError
 from app.core.rate_limit import login_rate_limiter
 from app.core.session_cookie import session_cookie_flags
 from app.models.user import User
-from app.schemas.auth import LoginRequest, UserOut
+from app.schemas.auth import LoginRequest, SignupRequest, UserOut
 from app.services import auth_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -59,6 +59,22 @@ def login(
 
     # AuthError is mapped to 401 by the global exception handler.
     user = auth_service.authenticate_user(db, body.email, body.password)
+    auth_session = auth_service.create_session(db, user)
+    _set_session_cookie(response, request, auth_session.id)
+    return user
+
+
+@router.post("/signup", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+def signup(
+    body: SignupRequest,
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+) -> User:
+    if not login_rate_limiter.is_allowed(_client_ip(request)):
+        raise RateLimitError("Too many signup attempts. Try again later.")
+
+    user = auth_service.register_user(db, body.email, body.password)
     auth_session = auth_service.create_session(db, user)
     _set_session_cookie(response, request, auth_session.id)
     return user

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from fastapi.testclient import TestClient
+from starlette.requests import Request
 
 from app.core.config import Settings, settings
 from app.core.session_cookie import session_cookie_flags
 from app.db.seed import seed_demo_user
-from starlette.requests import Request
 
 
 def test_login_success(client: TestClient, demo_credentials: dict[str, str]) -> None:
@@ -76,6 +76,58 @@ def test_login_me_logout_flow(
 
     me_after = client.get("/auth/me")
     assert me_after.status_code == 401
+
+
+def test_signup_creates_user_and_session(client: TestClient) -> None:
+    email = "new-user@example.com"
+    password = "SignupPass123!"
+    response = client.post("/auth/signup", json={"email": email, "password": password})
+    assert response.status_code == 201
+    body = response.json()
+    assert body["email"] == email
+    assert "session_id" in response.cookies
+
+    me = client.get("/auth/me")
+    assert me.status_code == 200
+    assert me.json()["email"] == email
+
+
+def test_signup_duplicate_email_409(
+    client: TestClient,
+    demo_credentials: dict[str, str],
+) -> None:
+    seed_demo_user()
+    response = client.post(
+        "/auth/signup",
+        json={
+            "email": demo_credentials["email"],
+            "password": "AnotherPass123!",
+        },
+    )
+    assert response.status_code == 409
+    assert "already exists" in response.json()["detail"].lower()
+
+
+def test_signup_short_password_422(client: TestClient) -> None:
+    response = client.post(
+        "/auth/signup",
+        json={"email": "shortpass@example.com", "password": "short"},
+    )
+    assert response.status_code == 422
+
+
+def test_signup_then_login(
+    client: TestClient,
+) -> None:
+    email = "roundtrip@example.com"
+    password = "RoundTrip123!"
+    created = client.post("/auth/signup", json={"email": email, "password": password})
+    assert created.status_code == 201
+
+    client.post("/auth/logout")
+    login = client.post("/auth/login", json={"email": email, "password": password})
+    assert login.status_code == 200
+    assert login.json()["email"] == email
 
 
 def test_cors_origins_strip_trailing_slash() -> None:
