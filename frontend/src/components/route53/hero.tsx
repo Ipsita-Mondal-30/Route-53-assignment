@@ -10,7 +10,7 @@ const crumbs = [
 export function Hero() {
   return (
     <section id="overview" className="pt-10 pb-16 md:pt-14 md:pb-24">
-      <div className="aws-content">
+      <div className="mx-auto w-full max-w-[1600px] px-5 md:px-8">
         <nav aria-label="Breadcrumb" className="mb-10 text-[14px] text-aws-text">
           <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
             {crumbs.map((crumb) => (
@@ -30,7 +30,7 @@ export function Hero() {
         </h1>
         <p className="mt-5 max-w-3xl text-[20px] leading-8 text-aws-ink md:text-[24px] md:leading-9">
           A reliable and cost-effective way to route end users to Internet
-          applications
+          applications.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <Link

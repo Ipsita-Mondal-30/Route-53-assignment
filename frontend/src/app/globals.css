@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-display: var(--font-nunito), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-sans: var(--font-inter), "Amazon Ember", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: var(--font-inter), "Amazon Ember", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --color-aws-navy: #202938;
   --color-aws-ink: #161d26;
   --color-aws-text: #0f141a;
@@ -22,6 +22,8 @@ body {
   color: var(--color-aws-text);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .font-display {
@@ -1731,6 +1733,248 @@ html[data-theme="light"] .shortcut-kbd {
   .case-study-card:focus-within {
     transition: none;
     box-shadow: 0 12px 36px rgba(15, 20, 26, 0.16);
+  }
+}
+
+/* —— Website satisfaction survey (star tab + right-side card) —— */
+.satisfaction-trigger {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  z-index: 95;
+  display: flex;
+  height: 40px;
+  width: 36px;
+  transform: translateY(-50%);
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px 0 0 6px;
+  background: #161d26;
+  color: #fff;
+  box-shadow: 0 1px 6px rgba(15, 20, 26, 0.22);
+}
+
+.satisfaction-trigger:hover {
+  background: #000;
+}
+
+.satisfaction-trigger-star path {
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.satisfaction-root {
+  position: fixed;
+  top: 214px;
+  right: 72px;
+  z-index: 90;
+  display: block;
+  width: min(540px, calc(100vw - 96px));
+  pointer-events: none;
+}
+
+.satisfaction-dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 32px 32px 24px;
+  border: 1px solid #e6e8eb;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(15, 20, 26, 0.16);
+  pointer-events: auto;
+}
+
+.satisfaction-title {
+  margin: 0;
+  max-width: 430px;
+  padding-right: 28px;
+  color: #161d26;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.satisfaction-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  height: 28px;
+  width: 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #161d26;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.satisfaction-close span {
+  display: block;
+  margin-top: -2px;
+}
+
+.satisfaction-close:hover,
+.satisfaction-close:focus-visible {
+  background: transparent;
+}
+
+.satisfaction-scale {
+  display: flex;
+  margin: 32px 0 0;
+  padding: 0 8px;
+  border: 0;
+  min-width: 0;
+}
+
+.satisfaction-options {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  width: 100%;
+  column-gap: 0;
+  row-gap: 6px;
+  justify-items: center;
+}
+
+.satisfaction-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.satisfaction-radio {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  border: 2px solid #d0d5dd;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+}
+
+.satisfaction-radio:hover {
+  border-color: #98a2b3;
+}
+
+.satisfaction-radio:checked {
+  border-color: #161d26;
+  background: radial-gradient(circle, #161d26 0 5px, transparent 6px);
+}
+
+.satisfaction-radio:focus-visible {
+  outline: 2px solid #006ce0;
+  outline-offset: 3px;
+}
+
+.satisfaction-number {
+  color: #161d26;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.satisfaction-caption {
+  color: #161d26;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.satisfaction-caption-start {
+  grid-column: 1;
+  justify-self: center;
+  text-align: center;
+}
+
+.satisfaction-caption-end {
+  grid-column: 5;
+  justify-self: center;
+  text-align: center;
+}
+
+.satisfaction-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 32px;
+}
+
+.satisfaction-continue {
+  display: inline-flex;
+  min-width: 120px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: #d5dbdb;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: not-allowed;
+}
+
+.satisfaction-continue:enabled {
+  background: #161d26;
+  cursor: pointer;
+}
+
+.satisfaction-continue:enabled:hover {
+  background: #000;
+}
+
+.satisfaction-thanks {
+  margin: 24px 8px;
+  color: #161d26;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+}
+
+@media (max-width: 1023px) {
+  .satisfaction-root {
+    top: 188px;
+    right: 24px;
+  }
+}
+
+@media (max-width: 639px) {
+  .satisfaction-root {
+    top: auto;
+    right: 12px;
+    bottom: 88px;
+    left: 12px;
+    width: auto;
+  }
+
+  .satisfaction-dialog {
+    padding: 22px 18px 18px;
+  }
+
+  .satisfaction-title {
+    font-size: 16px;
+    padding-right: 28px;
+  }
+
+  .satisfaction-caption {
+    font-size: 12px;
+  }
+
+  .satisfaction-continue {
+    min-width: 108px;
+    height: 38px;
+    font-size: 13px;
   }
 }
 

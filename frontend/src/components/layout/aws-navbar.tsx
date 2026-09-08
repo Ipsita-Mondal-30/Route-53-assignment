@@ -56,13 +56,13 @@ export function AwsNavbar() {
             href="/signin"
             className="aws-focus hidden text-[15px] font-medium whitespace-nowrap text-aws-ink hover:underline lg:inline"
           >
-            Sign in to the Console
+            Sign in to console
           </Link>
           <Link
             href="/signup"
             className="aws-btn-primary aws-focus h-10 px-4 text-[13px] sm:h-11 sm:px-5 sm:text-[14px]"
           >
-            Create an AWS Account
+            Create account
           </Link>
           <button
             type="button"
@@ -104,10 +104,10 @@ export function AwsNavbar() {
               Search
             </a>
             <Link href="/signin" className="aws-focus py-1 text-[15px] font-medium text-aws-ink">
-              Sign in to the Console
+              Sign in to console
             </Link>
             <Link href="/signup" className="aws-focus py-1 text-[15px] font-medium text-aws-ink">
-              Create an AWS Account
+              Create account
             </Link>
           </div>
         </nav>

@@ -55,48 +55,48 @@ export function Route53Navbar() {
   }, []);
 
   return (
-    <div className="aws-content sticky top-[130px] z-40 sm:top-[142px]">
+    <div className="sticky top-[130px] z-40 mx-auto w-full max-w-[1600px] px-5 sm:top-[142px] md:px-8">
       <div
         ref={containerRef}
-        className="relative rounded-2xl border border-[#d9dce3] bg-white shadow-[0_6px_24px_rgba(15,20,26,0.12)]"
+        className="relative rounded-[16px] bg-white shadow-[0_2px_10px_rgba(15,26,38,0.08)]"
       >
-        <div className="flex flex-col gap-1 px-5 py-3 md:h-[64px] md:flex-row md:items-center md:gap-10 md:px-8 md:py-0 lg:gap-14">
+        <div className="flex flex-col px-5 py-2.5 md:h-[56px] md:flex-row md:items-center md:gap-8 md:px-7 md:py-0 lg:gap-10">
           <a
             href="#overview"
-            className="aws-focus text-[16px] font-bold text-aws-ink"
+            className="aws-focus shrink-0 text-[16px] leading-6 font-bold tracking-[-0.01em] text-[#16191f]"
           >
             Amazon Route 53
           </a>
           <nav
             aria-label="Amazon Route 53"
-            className="flex items-center gap-5 overflow-x-auto pb-1 text-[15px] md:gap-8 md:overflow-visible md:pb-0"
+            className="flex items-center gap-6 overflow-x-auto text-[14px] leading-5 font-normal tracking-[-0.01em] text-[#16191f] md:gap-7 md:overflow-visible"
           >
             {navItems.map((item) =>
               item.hasMenu ? (
                 <div key={item.label} className="relative shrink-0">
                   <button
                     type="button"
-                    className="aws-focus inline-flex items-center gap-1 py-3 font-medium text-aws-muted hover:text-aws-ink"
+                    className="aws-focus inline-flex items-center gap-1 py-2.5 font-normal text-[#16191f] md:h-[56px] md:py-0"
                     aria-expanded={open}
                     aria-haspopup="menu"
                     aria-controls={menuId}
                     onClick={() => setOpen((value) => !value)}
                   >
                     {item.label}
-                    <ChevronDownIcon className="h-3 w-3" />
+                    <ChevronDownIcon className="h-2.5 w-2.5" />
                   </button>
                   {open ? (
                     <ul
                       id={menuId}
                       role="menu"
-                      className="absolute left-0 top-full z-50 min-w-[220px] rounded-lg border border-[#e5e7eb] bg-white py-2 shadow-[0_8px_24px_rgba(15,20,26,0.12)]"
+                      className="absolute top-full left-0 z-50 min-w-[220px] rounded-lg border border-[#e5e7eb] bg-white py-2 text-[14px] shadow-[0_8px_24px_rgba(15,20,26,0.12)]"
                     >
                       {featureLinks.map((link) => (
                         <li key={link.label} role="none">
                           <a
                             role="menuitem"
                             href={link.href}
-                            className="aws-focus block px-4 py-2 text-[14px] text-aws-ink hover:bg-[#f2f3f3]"
+                            className="aws-focus block px-4 py-2 text-[#16191f] hover:bg-[#f2f3f3]"
                             onClick={() => setOpen(false)}
                           >
                             {link.label}
@@ -111,13 +111,17 @@ export function Route53Navbar() {
                   key={item.label}
                   href={item.href}
                   aria-current={item.active ? "page" : undefined}
-                  className={`aws-focus shrink-0 py-3 font-medium ${
-                    item.active
-                      ? "border-b-[3px] border-[#ec7211] text-aws-ink"
-                      : "text-aws-muted hover:text-aws-ink"
-                  }`}
+                  className="aws-focus inline-flex shrink-0 items-center py-2.5 font-normal text-[#16191f] md:h-[56px] md:py-0"
                 >
-                  {item.label}
+                  <span
+                    className={
+                      item.active
+                        ? "border-b-[3px] border-[#16191f] pb-[3px]"
+                        : "pb-[6px]"
+                    }
+                  >
+                    {item.label}
+                  </span>
                 </a>
               ),
             )}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Nunito } from "next/font/google";
+import { Inter } from "next/font/google";
 import Script from "next/script";
 
 import { THEME_INIT_SCRIPT } from "@/lib/user-settings-storage";
@@ -10,12 +10,6 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
-});
-
-const nunito = Nunito({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-nunito",
 });
 
 export const metadata: Metadata = {
@@ -31,7 +25,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${nunito.variable}`}
+      className={inter.variable}
       suppressHydrationWarning
     >
       <body className={inter.className} suppressHydrationWarning>
