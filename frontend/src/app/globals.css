@@ -619,6 +619,16 @@ select.console-input option {
   background: rgba(66, 180, 255, 0.12);
 }
 
+.hz-info-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #42b4ff;
+  border-radius: 8px;
+  background: rgba(66, 180, 255, 0.08);
+}
+
 .hz-form-card {
   border: 1px solid #545b64;
   border-radius: 16px;
@@ -1097,6 +1107,11 @@ html[data-theme="light"] .aws-console .hz-type-card {
   border-color: #d5dbdb;
 }
 
+html[data-theme="light"] .aws-console .hz-info-alert {
+  background: #f1faff;
+  border-color: #0073bb;
+}
+
 html[data-theme="light"] .aws-console .hz-type-card[data-selected="true"] {
   background: #f1faff;
   border-color: #0073bb;
@@ -1352,4 +1367,10 @@ html[data-theme="light"] .shortcut-kbd {
   background: #f2f3f3;
   border-color: #d5dbdb;
   color: #16191f;
+}
+
+.iam-console-signin-bg {
+  background-color: #eaeded;
+  background-image: url("/images/signup/iam-signin-cubes.svg");
+  background-repeat: repeat;
 }

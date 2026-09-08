@@ -9,6 +9,7 @@ export type InfoTopic =
   | "domain"
   | "description"
   | "type"
+  | "vpc"
   | "tags";
 
 type InfoContent = {
@@ -118,6 +119,29 @@ const CONTENT: Record<InfoTopic, InfoContent> = {
     learnMore: [
       { label: "Working with public hosted zones", href: "#" },
       { label: "Working with private hosted zones", href: "#" },
+    ],
+  },
+  vpc: {
+    title: "VPCs to associate with the hosted zone",
+    intro:
+      "A private hosted zone is associated with one or more Amazon VPCs so that DNS queries from those VPCs resolve using the records in the hosted zone.",
+    bullets: [
+      <>
+        Choose the Region and VPC ID for each VPC that you want to associate with this
+        hosted zone.
+      </>,
+      <>
+        For each associated VPC, set <strong className="font-bold text-white">enableDnsHostnames</strong>{" "}
+        and <strong className="font-bold text-white">enableDnsSupport</strong> to true.
+      </>,
+      <>
+        To associate a VPC that was created in a different AWS account, use a programmatic
+        method such as the AWS CLI.
+      </>,
+    ],
+    learnMore: [
+      { label: "Working with private hosted zones", href: "#" },
+      { label: "VPC DNS attributes", href: "#" },
     ],
   },
   tags: {

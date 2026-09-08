@@ -361,7 +361,12 @@ function RootSigninCard({
   );
 }
 
-function IamSigninCard({
+const iamInputClass =
+  "mt-1 h-8 w-full rounded-[2px] border border-[#8d99a6] bg-white px-2 text-[13px] text-[#16191f] outline-none focus:border-[#0073bb] focus:shadow-[0_0_0_1px_#0073bb]";
+
+const ACCOUNT_REMEMBER_KEY = "route53.iam.account";
+
+function IamSigninForm({
   onSelectRoot,
 }: {
   onSelectRoot: () => void;
@@ -376,6 +381,18 @@ function IamSigninCard({
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(ACCOUNT_REMEMBER_KEY);
+      if (saved) {
+        setAccountId(saved);
+        setRemember(true);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   async function handleSignIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage(null);
@@ -388,11 +405,17 @@ function IamSigninCard({
     setError(null);
     setLoading(true);
     try {
+      if (remember) {
+        window.localStorage.setItem(ACCOUNT_REMEMBER_KEY, accountId.trim());
+      } else {
+        window.localStorage.removeItem(ACCOUNT_REMEMBER_KEY);
+      }
       const email = username.includes("@")
         ? username.trim()
         : `${username.trim()}@example.com`;
       await loginWithPassword(email, password);
-      router.push("/hosted-zones");
+      const next = new URLSearchParams(window.location.search).get("next");
+      router.push(next?.startsWith("/") ? next : "/hosted-zones");
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -405,8 +428,8 @@ function IamSigninCard({
   }
 
   return (
-    <div className="w-[calc(100%-32px)] max-w-[380px] rounded-lg border border-[#d5dbdb] bg-white p-[22px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] min-[900px]:w-[380px]">
-      <h1 className="flex items-center gap-2 text-[22px] leading-tight font-bold text-[#161e2d]">
+    <div className="flex w-full flex-col px-6 py-5 sm:px-7 sm:py-6">
+      <h1 className="flex items-center gap-1.5 text-[20px] leading-tight font-bold text-[#16191f]">
         IAM user sign in
         <button
           type="button"
@@ -418,20 +441,20 @@ function IamSigninCard({
             )
           }
         >
-          <InfoIcon className="h-4 w-4" />
+          <InfoIcon className="h-[15px] w-[15px]" />
         </button>
       </h1>
 
       <form className="mt-5" onSubmit={handleSignIn} noValidate>
         <div>
-          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <div className="flex flex-wrap items-baseline gap-x-1.5">
             <label
               htmlFor="account-id"
-              className="text-[14px] font-bold text-[#161e2d]"
+              className="text-[13px] font-bold text-[#16191f]"
             >
               Account ID or alias
             </label>
-            <a href="#" className={`text-[14px] ${dottedLink}`}>
+            <a href="#" className={`text-[13px] ${dottedLink}`}>
               (Don&apos;t have?)
             </a>
           </div>
@@ -440,29 +463,30 @@ function IamSigninCard({
             name="accountId"
             type="text"
             autoComplete="organization"
+            autoFocus
             value={accountId}
             onChange={(event) => {
               setAccountId(event.target.value);
               if (error) setError(null);
             }}
-            className={inputClass}
+            className={iamInputClass}
           />
         </div>
 
-        <label className="mt-3 flex items-center gap-2 text-[14px] font-medium text-[#161e2d]">
+        <label className="mt-2.5 flex items-center gap-2 text-[13px] text-[#16191f]">
           <input
             type="checkbox"
             checked={remember}
             onChange={(event) => setRemember(event.target.checked)}
-            className="h-3.5 w-3.5 accent-[#0073bb]"
+            className="h-[13px] w-[13px] accent-[#0073bb]"
           />
           Remember this account
         </label>
 
-        <div className="mt-4">
+        <div className="mt-3.5">
           <label
             htmlFor="iam-username"
-            className="block text-[14px] font-bold text-[#161e2d]"
+            className="block text-[13px] font-bold text-[#16191f]"
           >
             IAM username
           </label>
@@ -476,14 +500,14 @@ function IamSigninCard({
               setUsername(event.target.value);
               if (error) setError(null);
             }}
-            className={inputClass}
+            className={iamInputClass}
           />
         </div>
 
-        <div className="mt-4">
+        <div className="mt-3.5">
           <label
             htmlFor="iam-password"
-            className="block text-[14px] font-bold text-[#161e2d]"
+            className="block text-[13px] font-bold text-[#16191f]"
           >
             Password
           </label>
@@ -497,25 +521,25 @@ function IamSigninCard({
               setPassword(event.target.value);
               if (error) setError(null);
             }}
-            className={inputClass}
+            className={iamInputClass}
           />
           <div className="mt-2 flex items-center justify-between gap-3">
-            <label className="flex items-center gap-2 text-[14px] font-medium text-[#161e2d]">
+            <label className="flex items-center gap-2 text-[13px] text-[#16191f]">
               <input
                 type="checkbox"
                 checked={showPassword}
                 onChange={(event) => setShowPassword(event.target.checked)}
-                className="h-3.5 w-3.5 accent-[#0073bb]"
+                className="h-[13px] w-[13px] accent-[#0073bb]"
               />
               Show Password
             </label>
             <a
               href="#"
-              className={`shrink-0 text-[14px] ${dottedLink}`}
+              className={`shrink-0 text-[13px] ${dottedLink}`}
               onClick={(event) => {
                 event.preventDefault();
                 setMessage(
-                  "Password recovery is mocked in this demo. Try any credentials.",
+                  "Password recovery is mocked in this demo. Try demo@example.com / DemoPass123!.",
                 );
               }}
             >
@@ -533,7 +557,7 @@ function IamSigninCard({
         {message ? (
           <p
             role="status"
-            className="mt-3 rounded-md border border-[#d5dbdb] bg-white px-3 py-2 text-[13px] text-[#161e2d]"
+            className="mt-3 text-[13px] leading-[1.4] text-[#16191f]"
           >
             {message}
           </p>
@@ -542,7 +566,7 @@ function IamSigninCard({
         <button
           type="submit"
           disabled={loading}
-          className="mt-5 flex h-9 w-full items-center justify-center rounded-[18px] bg-[#ff9900] text-[14px] font-bold text-[#161e2d] outline-none transition-colors hover:bg-[#ec7211] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0073bb] disabled:cursor-not-allowed disabled:opacity-70"
+          className="mt-5 flex h-9 w-full items-center justify-center rounded-lg bg-[#ff9900] text-[14px] font-bold text-white outline-none transition-colors hover:bg-[#ec7211] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0073bb] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {loading ? "Signing in…" : "Sign in"}
         </button>
@@ -551,13 +575,13 @@ function IamSigninCard({
       <button
         type="button"
         onClick={onSelectRoot}
-        className="mt-3 flex h-9 w-full items-center justify-center rounded-[18px] border-2 border-[#0073bb] bg-white text-[14px] font-bold text-[#0073bb] outline-none transition-colors hover:bg-[#f1f8ff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0073bb]"
+        className="mt-2.5 flex h-9 w-full items-center justify-center rounded-lg border border-[#0073bb] bg-white text-[14px] font-bold text-[#0073bb] outline-none transition-colors hover:bg-[#f1f8ff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0073bb]"
       >
         Sign in using root user email
       </button>
 
-      <div className="mt-4 text-center">
-        <Link href="/signup" className={`text-[14px] ${solidLink}`}>
+      <div className="mt-5 text-center">
+        <Link href="/signup" className={`text-[13px] ${solidLink}`}>
           Create a new AWS account
         </Link>
       </div>
@@ -565,12 +589,160 @@ function IamSigninCard({
   );
 }
 
-export function SigninShell() {
-  const [mode, setMode] = useState<"root" | "iam">("root");
+function IamUpdateBanner({
+  onSwitchExperience,
+  onDismiss,
+}: {
+  onSwitchExperience: () => void;
+  onDismiss: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3 rounded-md border border-[#0073bb] bg-[#f1f8fc] px-4 py-3 sm:flex-row sm:items-start sm:gap-4">
+      <div className="flex min-w-0 flex-1 gap-2.5">
+        <InfoIcon className="mt-0.5 h-4 w-4 shrink-0" />
+        <p className="text-[13px] leading-[1.5] text-[#16191f]">
+          AWS sign-in is getting an update. Starting in mid-2026, Amazon Web
+          Services (AWS) is introducing updates to the AWS sign-in and sign-up
+          pages. These updates include new options for how you create and access
+          your account.{" "}
+          <a
+            href="#"
+            className={`inline-flex items-center gap-0.5 ${solidLink}`}
+          >
+            Learn more
+            <ExternalIcon className="h-3 w-3" />
+          </a>
+        </p>
+      </div>
+      <div className="flex shrink-0 items-center gap-2 self-end sm:self-start">
+        <button
+          type="button"
+          className="aws-focus rounded-md border border-[#16191f] bg-white px-3 py-1.5 text-[13px] font-medium whitespace-nowrap text-[#16191f] hover:bg-[#fafafa]"
+          onClick={onSwitchExperience}
+        >
+          Change to new experience
+        </button>
+        <button
+          type="button"
+          className="aws-focus p-1 text-[#545b64] hover:text-[#16191f]"
+          aria-label="Dismiss notification"
+          onClick={onDismiss}
+        >
+          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
+            <path
+              d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function IamExperience({ onSelectRoot }: { onSelectRoot: () => void }) {
   const [bannerVisible, setBannerVisible] = useState(true);
 
-  const isRoot = mode === "root";
+  return (
+    <div className="iam-console-signin-bg relative flex min-h-dvh flex-col overflow-x-hidden text-[#16191f]">
+      <div
+        className="pointer-events-none absolute bottom-0 left-0 z-0 w-[min(42vw,340px)] select-none sm:w-[min(38vw,400px)]"
+        aria-hidden="true"
+      >
+        <Image
+          src="/images/signup/background-left.png"
+          alt=""
+          width={474}
+          height={638}
+          className="h-auto w-full"
+          priority
+        />
+      </div>
+      <div
+        className="pointer-events-none absolute right-0 bottom-0 z-0 w-[min(40vw,320px)] select-none sm:w-[min(36vw,380px)]"
+        aria-hidden="true"
+      >
+        <Image
+          src="/images/signup/background-right.png"
+          alt=""
+          width={458}
+          height={596}
+          className="h-auto w-full"
+          priority
+        />
+      </div>
 
+      <div className="relative z-10 mx-auto flex w-full max-w-[1000px] flex-1 flex-col items-center px-4 pt-8 pb-6 sm:px-6">
+        <Link href="/" className="aws-focus shrink-0" aria-label="AWS home">
+          <Image
+            src="/images/signup/aws-logo.png"
+            alt="Amazon Web Services"
+            width={100}
+            height={61}
+            className="h-auto w-[88px]"
+            priority
+          />
+        </Link>
+
+        <div className="mt-5 w-full max-w-[980px] overflow-hidden rounded-lg border border-[#d5dbdb] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+          {bannerVisible ? (
+            <div className="px-4 pt-4 pb-1 sm:px-5 sm:pt-5">
+              <IamUpdateBanner
+                onSwitchExperience={onSelectRoot}
+                onDismiss={() => setBannerVisible(false)}
+              />
+            </div>
+          ) : null}
+
+          <div className="flex flex-col min-[900px]:flex-row">
+            <div className="w-full min-[900px]:w-[400px] min-[900px]:shrink-0">
+              <IamSigninForm onSelectRoot={onSelectRoot} />
+            </div>
+            <a
+              href="#"
+              className="relative hidden min-h-[450px] min-w-0 flex-1 bg-black min-[900px]:block"
+              aria-label="Amazon Lightsail — Learn more"
+            >
+              <Image
+                src="/images/signup/lightsail-promo.png"
+                alt="Amazon Lightsail. Lightsail is the easiest way to get started on AWS"
+                fill
+                sizes="560px"
+                className="object-cover object-center"
+                priority
+              />
+            </a>
+          </div>
+        </div>
+
+        <p className="mt-5 max-w-[720px] text-center text-[12px] leading-[1.55] text-[#545b64]">
+          By continuing, you agree to{" "}
+          <a href="#" className={solidLink}>
+            AWS Customer Agreement
+          </a>{" "}
+          or other agreement for AWS services, and the{" "}
+          <a href="#" className={solidLink}>
+            Privacy Notice
+          </a>
+          . This site uses essential cookies. See our{" "}
+          <a href="#" className={solidLink}>
+            Cookie Notice
+          </a>{" "}
+          for more information.
+        </p>
+
+        <p className="mt-auto pt-10 pb-2 text-center text-[12px] text-[#687078]">
+          © 2026 Amazon Web Services, Inc. or its affiliates. All rights
+          reserved.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function RootExperience({ onSelectIam }: { onSelectIam: () => void }) {
   return (
     <div className="relative flex min-h-dvh flex-col overflow-x-hidden bg-white text-[#161e2d]">
       <CubeBackground />
@@ -582,111 +754,20 @@ export function SigninShell() {
       <div className="relative z-10 mx-auto flex w-full max-w-[1180px] flex-1 flex-col items-center px-4 pt-[70px] pb-8 sm:px-6">
         <SigninHeader />
 
-        {isRoot ? (
-          <div className="mt-10 flex w-full items-start justify-center gap-5 min-[768px]:mt-[52px] min-[768px]:gap-6 min-[1000px]:gap-8">
-            <RootSigninCard onSelectIam={() => setMode("iam")} />
+        <div className="mt-10 flex w-full items-start justify-center gap-5 min-[768px]:mt-[52px] min-[768px]:gap-6 min-[1000px]:gap-8">
+          <RootSigninCard onSelectIam={onSelectIam} />
 
-            <div className="relative hidden w-[min(48vw,420px)] shrink-0 overflow-hidden rounded-[12px] min-[768px]:block min-[1000px]:w-[min(46vw,560px)] min-[1280px]:w-[640px]">
-              <Image
-                src="/images/signup/reinvent-promo.png"
-                alt="AWS re:Invent 2026 — See what's live now. Explore the session catalog."
-                width={640}
-                height={506}
-                className="h-auto w-full"
-                priority
-              />
-            </div>
+          <div className="relative hidden w-[min(48vw,420px)] shrink-0 overflow-hidden rounded-[12px] min-[768px]:block min-[1000px]:w-[min(46vw,560px)] min-[1280px]:w-[640px]">
+            <Image
+              src="/images/signup/reinvent-promo.png"
+              alt="AWS re:Invent 2026 — See what's live now. Explore the session catalog."
+              width={640}
+              height={506}
+              className="h-auto w-full"
+              priority
+            />
           </div>
-        ) : (
-          <>
-            {bannerVisible ? (
-              <div className="mt-8 flex w-full max-w-[800px] flex-col gap-3 rounded-lg border border-[#0073bb] bg-[#f1f8ff] px-4 py-3 sm:flex-row sm:items-start sm:gap-4 sm:px-5">
-                <div className="flex min-w-0 flex-1 gap-3">
-                  <InfoIcon className="mt-0.5 h-4 w-4 shrink-0" />
-                  <div className="min-w-0 text-[14px] leading-[1.45]">
-                    <p className="font-bold text-[#161e2d]">
-                      AWS sign-in is getting an update
-                    </p>
-                    <p className="mt-1 text-[#161e2d]">
-                      Starting in mid-2026, Amazon Web Services (AWS) is
-                      introducing updates to the AWS sign-in and sign-up pages.
-                      These updates include new options for how you create and
-                      access your account.{" "}
-                      <a
-                        href="#"
-                        className={`inline-flex items-center gap-0.5 ${solidLink}`}
-                      >
-                        Learn more
-                        <ExternalIcon className="h-3 w-3" />
-                      </a>
-                    </p>
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-3 self-end sm:self-center">
-                  <button
-                    type="button"
-                    className="aws-focus rounded-md border border-[#545b64] bg-white px-3.5 py-1.5 text-[13px] font-medium text-[#161e2d] hover:bg-[#fafafa]"
-                    onClick={() => {
-                      setMode("root");
-                    }}
-                  >
-                    Change to new experience
-                  </button>
-                  <button
-                    type="button"
-                    className="aws-focus p-1 text-[#545b64] hover:text-[#161e2d]"
-                    aria-label="Dismiss notification"
-                    onClick={() => setBannerVisible(false)}
-                  >
-                    <svg
-                      viewBox="0 0 16 16"
-                      className="h-4 w-4"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            ) : null}
-
-            <div className="mt-6 flex w-full max-w-[960px] flex-col items-center gap-4 min-[900px]:flex-row min-[900px]:items-stretch min-[900px]:justify-center min-[900px]:gap-5">
-              <IamSigninCard onSelectRoot={() => setMode("root")} />
-
-              <div className="relative hidden min-h-full w-[560px] shrink-0 overflow-hidden rounded-lg bg-black shadow-[0_1px_3px_rgba(0,0,0,0.06)] min-[900px]:block">
-                <Image
-                  src="/images/signup/lightsail-promo.png"
-                  alt="Amazon Lightsail — Lightsail is the easiest way to get started on AWS"
-                  fill
-                  sizes="560px"
-                  className="object-cover object-center"
-                  priority
-                />
-              </div>
-            </div>
-
-            <p className="mt-5 w-full max-w-[800px] text-center text-[12px] leading-[1.5] text-[#545b64]">
-              By continuing, you agree to the{" "}
-              <a href="#" className={solidLink}>
-                AWS Customer Agreement
-              </a>{" "}
-              or other agreement for AWS services, and the{" "}
-              <a href="#" className={solidLink}>
-                Privacy Notice
-              </a>
-              . This site uses essential cookies. See our{" "}
-              <a href="#" className={solidLink}>
-                Cookie Notice
-              </a>{" "}
-              for more information.
-            </p>
-          </>
-        )}
+        </div>
 
         <p className="mt-auto pt-10 text-center text-[13px] text-[#8d96a0]">
           © 2026 Amazon Web Services, Inc. or its affiliates. All rights
@@ -695,4 +776,14 @@ export function SigninShell() {
       </div>
     </div>
   );
+}
+
+export function SigninShell() {
+  const [mode, setMode] = useState<"root" | "iam">("iam");
+
+  if (mode === "root") {
+    return <RootExperience onSelectIam={() => setMode("iam")} />;
+  }
+
+  return <IamExperience onSelectRoot={() => setMode("root")} />;
 }

@@ -5,6 +5,7 @@ from app.api.deps import get_current_user, get_db
 from app.core.config import SESSION_COOKIE_NAME, settings
 from app.core.exceptions import RateLimitError
 from app.core.rate_limit import login_rate_limiter
+from app.core.session_cookie import session_cookie_flags
 from app.models.user import User
 from app.schemas.auth import LoginRequest, UserOut
 from app.services import auth_service
@@ -21,26 +22,28 @@ def _client_ip(request: Request) -> str:
     return "unknown"
 
 
-def _set_session_cookie(response: Response, session_id: str) -> None:
-    """Session cookie: httpOnly + SameSite=Lax; Secure when ENVIRONMENT=prod."""
+def _set_session_cookie(response: Response, request: Request, session_id: str) -> None:
+    """httpOnly session cookie; SameSite=None; Secure on cross-site SPA + API hosts."""
+    secure, samesite = session_cookie_flags(request)
     response.set_cookie(
         key=SESSION_COOKIE_NAME,
         value=session_id,
         httponly=True,
-        secure=settings.is_prod,
-        samesite="lax",
+        secure=secure,
+        samesite=samesite,
         max_age=settings.session_expire_minutes * 60,
         path="/",
     )
 
 
-def _clear_session_cookie(response: Response) -> None:
+def _clear_session_cookie(response: Response, request: Request) -> None:
+    secure, samesite = session_cookie_flags(request)
     response.delete_cookie(
         key=SESSION_COOKIE_NAME,
         path="/",
         httponly=True,
-        secure=settings.is_prod,
-        samesite="lax",
+        secure=secure,
+        samesite=samesite,
     )
 
 
@@ -57,7 +60,7 @@ def login(
     # AuthError is mapped to 401 by the global exception handler.
     user = auth_service.authenticate_user(db, body.email, body.password)
     auth_session = auth_service.create_session(db, user)
-    _set_session_cookie(response, auth_session.id)
+    _set_session_cookie(response, request, auth_session.id)
     return user
 
 
@@ -71,7 +74,7 @@ def logout(
     session_id = request.cookies.get(SESSION_COOKIE_NAME)
     if session_id:
         auth_service.delete_session(db, session_id)
-    _clear_session_cookie(response)
+    _clear_session_cookie(response, request)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

@@ -147,10 +147,10 @@ export function GlobalNav({
           <GridIcon className="h-[18px] w-[18px]" />
         </button>
 
-        <div className="relative mx-2 hidden min-w-0 flex-1 md:block">
+        <div className="relative mx-2 hidden h-7 w-[260px] shrink-0 md:block lg:w-[300px]">
           <span className="sr-only">Search</span>
           <Search
-            className="pointer-events-none absolute top-1/2 left-3 z-[1] h-4 w-4 -translate-y-1/2 text-[#aab7b8]"
+            className="pointer-events-none absolute top-1/2 left-2.5 z-[1] h-3.5 w-3.5 -translate-y-1/2 text-[#8d99a6]"
             strokeWidth={2.25}
           />
           <input
@@ -158,19 +158,19 @@ export function GlobalNav({
             type="search"
             placeholder="Search"
             data-shortcut-search="nav"
-            className={`h-8 w-full rounded-md border border-[#545b64] bg-[#05070a] py-0 pl-9 text-[14px] leading-5 font-normal text-white outline-none placeholder:italic placeholder:font-normal placeholder:text-[#aab7b8] focus:border-[#42b4ff] focus:shadow-[0_0_0_1px_#42b4ff] ${
-              showAskQ ? "pr-[232px]" : "pr-[108px]"
+            className={`h-7 w-full rounded-sm border border-[#687078] bg-[#232f3e] py-0 pl-8 text-[13px] leading-5 font-normal text-[#d5dbdb] outline-none placeholder:italic placeholder:font-normal placeholder:text-[#8d99a6] appearance-none focus:border-[#42b4ff] focus:shadow-[0_0_0_1px_#42b4ff] [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden ${
+              showAskQ ? "pr-[210px]" : "pr-[96px]"
             }`}
           />
-          <div className="pointer-events-none absolute inset-y-0 right-1.5 flex items-center gap-2">
-            <span className="text-[12px] leading-none font-normal text-[#aab7b8]">
+          <div className="pointer-events-none absolute inset-y-0 right-1 flex items-center gap-1.5">
+            <span className="text-[11px] leading-none font-normal text-[#8d99a6]">
               [Option+S]
             </span>
             <button
               type="button"
-              className={`ask-q-chip pointer-events-auto inline-flex h-[22px] items-center gap-1.5 rounded-full text-[12px] leading-none font-normal text-[#eaeded] transition-[padding,background-color,border-color] duration-150 ${
+              className={`ask-q-chip pointer-events-auto inline-flex h-5 items-center gap-1 rounded-full text-[11px] leading-none font-normal text-[#d5dbdb] ${
                 showAskQ
-                  ? "border border-[#d5dbdb] bg-[#232f3e] pr-2.5 pl-1.5"
+                  ? "border border-[#8d99a6] bg-[#16191f] pr-2 pl-1"
                   : "border border-transparent px-0.5"
               }`}
               aria-label="Ask Amazon Q"
@@ -181,9 +181,9 @@ export function GlobalNav({
               onBlur={concealAskQ}
               onClick={onToggleAmazonQ}
             >
-              <AmazonQSearchIcon className="h-4 w-4 shrink-0" />
+              <AmazonQSearchIcon className="h-3.5 w-3.5 shrink-0" />
               <span
-                className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-150 ${
+                className={`overflow-hidden whitespace-nowrap ${
                   showAskQ ? "max-w-[110px] opacity-100" : "max-w-0 opacity-0"
                 }`}
               >
@@ -282,7 +282,7 @@ export function GlobalNav({
 
         <NavDivider className="hidden sm:block" />
 
-        <div ref={accountRef} className="relative flex h-12 items-stretch">
+        <div ref={accountRef} className="relative flex h-12 shrink-0">
           <button
             type="button"
             aria-expanded={accountOpen}
@@ -293,17 +293,17 @@ export function GlobalNav({
               setNotificationsOpen(false);
               setRegionOpen(false);
             }}
-            className={`mx-1 my-1 mr-2 flex flex-col items-end justify-center px-1.5 text-left hover:bg-[#232f3e] ${
+            className={`flex h-12 flex-col items-end justify-center px-3 text-right hover:bg-[#232f3e] ${
               accountOpen ? "bg-[#232f3e]" : ""
             }`}
           >
-            <span className="inline-flex items-center gap-1.5 rounded-[4px] bg-[#414d5c] px-2 py-[3px]">
-              <span className="whitespace-nowrap text-[12px] leading-[15px] font-bold text-white">
+            <span className="inline-flex h-[18px] max-w-[220px] items-center gap-1 rounded-[4px] bg-[#414d5c] px-2">
+              <span className="truncate text-[12px] leading-[18px] font-bold text-white">
                 {session.workgroup}
               </span>
-              <CaretDownIcon className="h-2 w-2 shrink-0 text-[#d5dbdb]" />
+              <CaretDownIcon className="h-1.5 w-1.5 shrink-0 text-[#d5dbdb]" />
             </span>
-            <span className="mt-px pr-0.5 text-[11px] leading-[13px] font-normal text-[#aab7b8]">
+            <span className="mt-0.5 max-w-[220px] truncate pr-0.5 text-[11px] leading-[13px] font-normal text-[#d1d5db]">
               {session.name}
             </span>
           </button>
@@ -335,7 +335,7 @@ export function GlobalNav({
                     setLoggingOut(true);
                     try {
                       await logoutSession();
-                      router.replace("/login");
+                      router.replace("/signin");
                     } finally {
                       setLoggingOut(false);
                       setAccountOpen(false);

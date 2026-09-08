@@ -7,6 +7,12 @@ from app.db import session as db_session
 router = APIRouter()
 
 
+@router.api_route("/", methods=["GET", "HEAD"], response_model=None)
+def root() -> JSONResponse:
+    """Render (and other hosts) probe ``HEAD /``; keep this cheap and unauthenticated."""
+    return JSONResponse(status_code=200, content={"status": "ok"})
+
+
 @router.get("/health", response_model=None)
 def health() -> JSONResponse:
     """Liveness + DB readiness — no authentication required.

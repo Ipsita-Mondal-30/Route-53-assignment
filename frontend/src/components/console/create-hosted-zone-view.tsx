@@ -14,6 +14,11 @@ import {
   type InfoTopic,
 } from "@/components/route53/HostedZoneInfoPanel";
 import { HostedZoneTags } from "@/components/route53/HostedZoneTags";
+import {
+  emptyVpcAssociation,
+  PrivateZoneVpcAssociation,
+  type VpcAssociation,
+} from "@/components/route53/PrivateZoneVpcAssociation";
 import { ApiError } from "@/lib/api";
 import {
   isValidDomainName,
@@ -28,8 +33,12 @@ export function CreateHostedZoneView() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState<HostedZoneType>("Public");
+  const [vpcAssociations, setVpcAssociations] = useState<VpcAssociation[]>([
+    emptyVpcAssociation(),
+  ]);
   const [tags, setTags] = useState<ZoneTag[]>([]);
   const [domainError, setDomainError] = useState<string | null>(null);
+  const [vpcError, setVpcError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [infoTopic, setInfoTopic] = useState<InfoTopic | null>(null);
 
@@ -56,8 +65,17 @@ export function CreateHostedZoneView() {
       return;
     }
 
+    if (type === "Private") {
+      const hasVpc = vpcAssociations.some((row) => row.region && row.vpcId);
+      if (!hasVpc) {
+        setVpcError("Choose at least one VPC to associate with this private hosted zone.");
+        return;
+      }
+    }
+
     setSubmitting(true);
     setDomainError(null);
+    setVpcError(null);
     try {
       const zone = await createZone({
         name: domain,
@@ -109,9 +127,27 @@ export function CreateHostedZoneView() {
               setDomainError(null);
             }}
             onDescriptionChange={setDescription}
-            onTypeChange={setType}
+            onTypeChange={(value) => {
+              setType(value);
+              setVpcError(null);
+              if (value === "Private" && vpcAssociations.length === 0) {
+                setVpcAssociations([emptyVpcAssociation()]);
+              }
+            }}
             onOpenInfo={openInfo}
           />
+
+          {type === "Private" ? (
+            <PrivateZoneVpcAssociation
+              associations={vpcAssociations}
+              onChange={(next) => {
+                setVpcAssociations(next);
+                setVpcError(null);
+              }}
+              onOpenInfo={openInfo}
+              error={vpcError}
+            />
+          ) : null}
 
           <HostedZoneTags tags={tags} onChange={setTags} onOpenInfo={openInfo} />
 

@@ -10,7 +10,8 @@ Session-authenticated DNS management API that mirrors a subset of Amazon Route 5
 ## Authentication
 
 1. `POST /auth/login` with `{ "email", "password" }` — sets an **httpOnly**
-   `session_id` cookie (`Secure` in production, `SameSite=Lax`).
+   `session_id` cookie (`SameSite=Lax` on same-site; `None; Secure` when the
+   SPA and API are on different hosts).
 2. Send that cookie on subsequent requests (`credentials: include` from browsers).
 3. `POST /auth/logout` deletes the server-side session and clears the cookie.
 

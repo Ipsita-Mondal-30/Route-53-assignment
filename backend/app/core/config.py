@@ -9,6 +9,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 SESSION_COOKIE_NAME = "session_id"
 
 
+def _normalize_cors_origin(origin: str) -> str:
+    """Browsers never send a trailing slash on Origin; strip it from the allow-list."""
+    return origin.strip().rstrip("/")
+
+
 class Settings(BaseSettings):
     """Application settings loaded from environment / `.env`."""
 
@@ -69,8 +74,16 @@ class Settings(BaseSettings):
             import json
 
             parsed = json.loads(raw)
-            return [str(item).strip() for item in parsed if str(item).strip()]
-        return [origin.strip() for origin in raw.split(",") if origin.strip()]
+            return [
+                _normalize_cors_origin(str(item))
+                for item in parsed
+                if str(item).strip()
+            ]
+        return [
+            _normalize_cors_origin(origin)
+            for origin in raw.split(",")
+            if origin.strip()
+        ]
 
     @property
     def is_prod(self) -> bool:

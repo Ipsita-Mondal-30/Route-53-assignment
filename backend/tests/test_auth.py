@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from app.core.config import settings
+from app.core.config import Settings, settings
+from app.core.session_cookie import session_cookie_flags
 from app.db.seed import seed_demo_user
+from starlette.requests import Request
 
 
 def test_login_success(client: TestClient, demo_credentials: dict[str, str]) -> None:
@@ -74,3 +76,71 @@ def test_login_me_logout_flow(
 
     me_after = client.get("/auth/me")
     assert me_after.status_code == 401
+
+
+def test_cors_origins_strip_trailing_slash() -> None:
+    parsed = Settings(
+        CORS_ORIGINS="https://route-53-assignment.vercel.app/,http://localhost:3001/"
+    )
+    assert parsed.cors_origins == [
+        "https://route-53-assignment.vercel.app",
+        "http://localhost:3001",
+    ]
+
+
+def _cookie_request(**headers: str) -> Request:
+    header_list = [
+        (key.lower().encode("latin-1"), value.encode("latin-1"))
+        for key, value in headers.items()
+    ]
+    scope = {
+        "type": "http",
+        "asgi": {"version": "3.0"},
+        "http_version": "1.1",
+        "method": "POST",
+        "scheme": "http",
+        "path": "/auth/login",
+        "raw_path": b"/auth/login",
+        "query_string": b"",
+        "headers": header_list,
+        "client": ("127.0.0.1", 123),
+        "server": ("testserver", 80),
+    }
+    return Request(scope)
+
+
+def test_session_cookie_lax_for_localhost() -> None:
+    request = _cookie_request(
+        origin="http://localhost:3001",
+        host="localhost:8000",
+    )
+    assert session_cookie_flags(request) == (False, "lax")
+
+
+def test_session_cookie_none_secure_for_split_hosts() -> None:
+    request = _cookie_request(
+        origin="https://route-53-assignment.vercel.app",
+        host="route-53-assignment.onrender.com",
+        **{"x-forwarded-proto": "https"},
+    )
+    assert session_cookie_flags(request) == (True, "none")
+
+
+def test_cross_site_login_sets_samesite_none(
+    client: TestClient,
+    demo_credentials: dict[str, str],
+) -> None:
+    seed_demo_user()
+    response = client.post(
+        "/auth/login",
+        json=demo_credentials,
+        headers={
+            "Origin": "https://route-53-assignment.vercel.app",
+            "Host": "route-53-assignment.onrender.com",
+            "X-Forwarded-Proto": "https",
+        },
+    )
+    assert response.status_code == 200
+    set_cookie = response.headers.get("set-cookie", "").lower()
+    assert "samesite=none" in set_cookie
+    assert "secure" in set_cookie

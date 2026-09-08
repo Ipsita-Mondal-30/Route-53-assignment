@@ -103,7 +103,7 @@ export function ConsoleLayout({ children }: { children: ReactNode }) {
         return;
       }
       if (!current) {
-        router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+        router.replace(`/signin?next=${encodeURIComponent(pathname)}`);
         return;
       }
       setSession(current);
