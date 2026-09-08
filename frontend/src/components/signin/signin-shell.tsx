@@ -123,11 +123,11 @@ function CubeBackground() {
   return (
     <>
       <div
-        className="pointer-events-none absolute bottom-0 left-0 z-0 w-[min(42vw,340px)] select-none sm:w-[min(38vw,400px)] md:w-[min(34vw,440px)]"
+        className="pointer-events-none absolute bottom-0 left-0 z-0 w-[min(52vw,474px)] select-none"
         aria-hidden="true"
       >
         <Image
-          src="/images/signup/background-left.png"
+          src="/images/signin/background-left.png"
           alt=""
           width={474}
           height={638}
@@ -136,11 +136,11 @@ function CubeBackground() {
         />
       </div>
       <div
-        className="pointer-events-none absolute right-0 bottom-0 z-0 w-[min(40vw,320px)] select-none sm:w-[min(36vw,380px)] md:w-[min(32vw,420px)]"
+        className="pointer-events-none absolute right-0 bottom-0 z-0 w-[min(50vw,458px)] select-none"
         aria-hidden="true"
       >
         <Image
-          src="/images/signup/background-right.png"
+          src="/images/signin/background-right.png"
           alt=""
           width={458}
           height={596}
@@ -362,7 +362,9 @@ function RootSigninCard({
 }
 
 const iamInputClass =
-  "mt-1 h-8 w-full rounded-[2px] border border-[#8d99a6] bg-white px-2 text-[13px] text-[#16191f] outline-none focus:border-[#0073bb] focus:shadow-[0_0_0_1px_#0073bb]";
+  "mt-1 h-8 w-full rounded-[4px] border border-[#7d8998] bg-white px-2.5 text-[13px] text-[#16191f] outline-none focus:border-[#0073bb] focus:shadow-[0_0_0_1px_#0073bb]";
+
+const iamCheckboxClass = "iam-signin-checkbox";
 
 const ACCOUNT_REMEMBER_KEY = "route53.iam.account";
 
@@ -478,7 +480,7 @@ function IamSigninForm({
             type="checkbox"
             checked={remember}
             onChange={(event) => setRemember(event.target.checked)}
-            className="h-[13px] w-[13px] accent-[#0073bb]"
+            className={iamCheckboxClass}
           />
           Remember this account
         </label>
@@ -529,7 +531,7 @@ function IamSigninForm({
                 type="checkbox"
                 checked={showPassword}
                 onChange={(event) => setShowPassword(event.target.checked)}
-                className="h-[13px] w-[13px] accent-[#0073bb]"
+                className={iamCheckboxClass}
               />
               Show Password
             </label>
@@ -566,7 +568,7 @@ function IamSigninForm({
         <button
           type="submit"
           disabled={loading}
-          className="mt-5 flex h-9 w-full items-center justify-center rounded-lg bg-[#ff9900] text-[14px] font-bold text-white outline-none transition-colors hover:bg-[#ec7211] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0073bb] disabled:cursor-not-allowed disabled:opacity-70"
+          className="mt-5 flex h-9 w-full items-center justify-center rounded-md bg-[#ff9900] text-[14px] font-bold text-black outline-none transition-colors hover:bg-[#ec7211] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0073bb] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {loading ? "Signing in…" : "Sign in"}
         </button>
@@ -575,7 +577,7 @@ function IamSigninForm({
       <button
         type="button"
         onClick={onSelectRoot}
-        className="mt-2.5 flex h-9 w-full items-center justify-center rounded-lg border border-[#0073bb] bg-white text-[14px] font-bold text-[#0073bb] outline-none transition-colors hover:bg-[#f1f8ff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0073bb]"
+        className="mt-2.5 flex h-9 w-full items-center justify-center rounded-md border border-[#0073bb] bg-white text-[14px] font-bold text-[#0073bb] outline-none transition-colors hover:bg-[#f1f8ff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0073bb]"
       >
         Sign in using root user email
       </button>
@@ -597,22 +599,24 @@ function IamUpdateBanner({
   onDismiss: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-[#0073bb] bg-[#f1f8fc] px-4 py-3 sm:flex-row sm:items-start sm:gap-4">
+    <div className="flex flex-col gap-3 rounded-lg border border-[#0073bb] bg-[#f1f8fc] px-4 py-3 sm:flex-row sm:items-start sm:gap-4">
       <div className="flex min-w-0 flex-1 gap-2.5">
         <InfoIcon className="mt-0.5 h-4 w-4 shrink-0" />
-        <p className="text-[13px] leading-[1.5] text-[#16191f]">
-          AWS sign-in is getting an update. Starting in mid-2026, Amazon Web
-          Services (AWS) is introducing updates to the AWS sign-in and sign-up
-          pages. These updates include new options for how you create and access
-          your account.{" "}
-          <a
-            href="#"
-            className={`inline-flex items-center gap-0.5 ${solidLink}`}
-          >
-            Learn more
-            <ExternalIcon className="h-3 w-3" />
-          </a>
-        </p>
+        <div className="text-[13px] leading-[1.5] text-[#16191f]">
+          <p className="font-bold">AWS sign-in is getting an update</p>
+          <p className="mt-0.5">
+            Starting in mid-2026, Amazon Web Services (AWS) is introducing
+            updates to the AWS sign-in and sign-up pages. These updates include
+            new options for how you create and access your account.{" "}
+            <a
+              href="#"
+              className={`inline-flex items-center gap-0.5 ${solidLink}`}
+            >
+              Learn more
+              <ExternalIcon className="h-3 w-3" />
+            </a>
+          </p>
+        </div>
       </div>
       <div className="flex shrink-0 items-center gap-2 self-end sm:self-start">
         <button
@@ -646,78 +650,59 @@ function IamExperience({ onSelectRoot }: { onSelectRoot: () => void }) {
   const [bannerVisible, setBannerVisible] = useState(true);
 
   return (
-    <div className="iam-console-signin-bg relative flex min-h-dvh flex-col overflow-x-hidden text-[#16191f]">
-      <div
-        className="pointer-events-none absolute bottom-0 left-0 z-0 w-[min(42vw,340px)] select-none sm:w-[min(38vw,400px)]"
-        aria-hidden="true"
-      >
-        <Image
-          src="/images/signup/background-left.png"
-          alt=""
-          width={474}
-          height={638}
-          className="h-auto w-full"
-          priority
-        />
-      </div>
-      <div
-        className="pointer-events-none absolute right-0 bottom-0 z-0 w-[min(40vw,320px)] select-none sm:w-[min(36vw,380px)]"
-        aria-hidden="true"
-      >
-        <Image
-          src="/images/signup/background-right.png"
-          alt=""
-          width={458}
-          height={596}
-          className="h-auto w-full"
-          priority
-        />
+    <div className="relative flex min-h-dvh flex-col overflow-x-hidden bg-white text-[#16191f]">
+      <CubeBackground />
+
+      <div className="absolute top-[18px] right-6 z-30 hidden flex-wrap items-center justify-end gap-x-5 gap-y-2 min-[768px]:flex sm:right-10">
+        <TopControls />
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1000px] flex-1 flex-col items-center px-4 pt-8 pb-6 sm:px-6">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1040px] flex-1 flex-col items-center px-4 pt-8 pb-6 sm:px-6">
         <Link href="/" className="aws-focus shrink-0" aria-label="AWS home">
           <Image
             src="/images/signup/aws-logo.png"
             alt="Amazon Web Services"
             width={100}
             height={61}
-            className="h-auto w-[88px]"
+            className="h-auto w-[80px]"
             priority
           />
         </Link>
 
-        <div className="mt-5 w-full max-w-[980px] overflow-hidden rounded-lg border border-[#d5dbdb] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-          {bannerVisible ? (
-            <div className="px-4 pt-4 pb-1 sm:px-5 sm:pt-5">
-              <IamUpdateBanner
-                onSwitchExperience={onSelectRoot}
-                onDismiss={() => setBannerVisible(false)}
-              />
-            </div>
-          ) : null}
-
-          <div className="flex flex-col min-[900px]:flex-row">
-            <div className="w-full min-[900px]:w-[400px] min-[900px]:shrink-0">
-              <IamSigninForm onSelectRoot={onSelectRoot} />
-            </div>
-            <a
-              href="#"
-              className="relative hidden min-h-[450px] min-w-0 flex-1 bg-black min-[900px]:block"
-              aria-label="Amazon Lightsail — Learn more"
-            >
-              <Image
-                src="/images/signup/lightsail-promo.png"
-                alt="Amazon Lightsail. Lightsail is the easiest way to get started on AWS"
-                fill
-                sizes="560px"
-                className="object-cover object-center"
-                priority
-              />
-            </a>
-          </div>
+        <div className="relative z-10 mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 min-[768px]:hidden">
+          <TopControls />
         </div>
 
-        <p className="mt-5 max-w-[720px] text-center text-[12px] leading-[1.55] text-[#545b64]">
+        {bannerVisible ? (
+          <div className="mt-6 w-full">
+            <IamUpdateBanner
+              onSwitchExperience={onSelectRoot}
+              onDismiss={() => setBannerVisible(false)}
+            />
+          </div>
+        ) : null}
+
+        <div className="mt-4 flex w-full flex-col overflow-hidden rounded-lg border border-[#d5dbdb] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] min-[900px]:flex-row">
+          <div className="w-full min-[900px]:w-[420px] min-[900px]:shrink-0">
+            <IamSigninForm onSelectRoot={onSelectRoot} />
+          </div>
+          <a
+            href="#"
+            className="relative hidden min-h-[460px] min-w-0 flex-1 bg-black min-[900px]:block"
+            aria-label="Amazon Lightsail — Learn more"
+          >
+            <Image
+              src="/images/signup/lightsail-promo.png"
+              alt="Amazon Lightsail. Lightsail is the easiest way to get started on AWS"
+              fill
+              sizes="620px"
+              className="object-cover object-center"
+              priority
+            />
+          </a>
+        </div>
+
+        <p className="mt-5 max-w-[760px] self-start text-[12px] leading-[1.55] text-[#545b64] min-[900px]:max-w-[420px]">
           By continuing, you agree to{" "}
           <a href="#" className={solidLink}>
             AWS Customer Agreement

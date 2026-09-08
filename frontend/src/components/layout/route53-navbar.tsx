@@ -113,7 +113,7 @@ export function Route53Navbar() {
                   aria-current={item.active ? "page" : undefined}
                   className={`aws-focus shrink-0 py-3 font-medium ${
                     item.active
-                      ? "border-b-[3px] border-aws-ink text-aws-ink"
+                      ? "border-b-[3px] border-[#ec7211] text-aws-ink"
                       : "text-aws-muted hover:text-aws-ink"
                   }`}
                 >
