@@ -11,24 +11,27 @@ import {
   Settings,
 } from "lucide-react";
 
+import { ApiError } from "@/lib/api";
+import { askAmazonQ } from "@/lib/amazon-q-api";
+
 const SUGGESTIONS = [
   {
-    id: "domain",
-    title: "How do I add a custom domain to my application?",
-    subtitle: "Configure Route 53 or CloudFront for custom domain routing.",
+    id: "zone",
+    title: "How do I create a public hosted zone?",
+    subtitle: "Steps to create a zone and get assigned name servers.",
     tag: "Q&A",
   },
   {
-    id: "ec2",
-    title: "List running EC2 instances",
-    subtitle: "Show active compute resources for resource management.",
-    tag: "Table",
+    id: "alias",
+    title: "When should I use an alias record instead of a CNAME?",
+    subtitle: "Route 53 alias vs CNAME at the zone apex and for AWS targets.",
+    tag: "Q&A",
   },
   {
-    id: "s3",
-    title: "List S3 buckets with tag value 'production'",
-    subtitle: "Find tagged buckets across your account.",
-    tag: "Table",
+    id: "weighted",
+    title: "How do weighted routing policies work?",
+    subtitle: "Split traffic across records with health checks.",
+    tag: "Q&A",
   },
 ] as const;
 
@@ -49,6 +52,7 @@ export function AmazonQPanel({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!open) {
@@ -63,21 +67,48 @@ export function AmazonQPanel({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose, open]);
 
-  function send(text: string) {
+  async function send(text: string) {
     const trimmed = text.trim();
-    if (!trimmed) {
+    if (!trimmed || loading) {
       return;
     }
-    setMessages((current) => [
-      ...current,
-      { id: `u-${Date.now()}`, role: "user", text: trimmed },
-      {
-        id: `a-${Date.now()}`,
-        role: "assistant",
-        text: "Amazon Q is in demo mode. In the AWS console this would answer from your account context. Try asking about hosted zones, records, or routing policies.",
-      },
-    ]);
+
+    const history = messages.map(({ role, text: body }) => ({
+      role,
+      text: body,
+    }));
+    const userMessage: ChatMessage = {
+      id: `u-${Date.now()}`,
+      role: "user",
+      text: trimmed,
+    };
+
+    setMessages((current) => [...current, userMessage]);
     setDraft("");
+    setLoading(true);
+
+    try {
+      const reply = await askAmazonQ([...history, { role: "user", text: trimmed }]);
+      setMessages((current) => [
+        ...current,
+        { id: `a-${Date.now()}`, role: "assistant", text: reply },
+      ]);
+    } catch (err) {
+      const detail =
+        err instanceof ApiError
+          ? err.detail
+          : "Amazon Q is unavailable. Try again.";
+      setMessages((current) => [
+        ...current,
+        {
+          id: `a-${Date.now()}`,
+          role: "assistant",
+          text: detail,
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -142,7 +173,7 @@ export function AmazonQPanel({
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`max-w-[92%] rounded-lg px-3 py-2 text-[13px] leading-5 ${
+                  className={`max-w-[92%] rounded-lg px-3 py-2 text-[13px] leading-5 whitespace-pre-wrap ${
                     message.role === "user"
                       ? "self-end bg-[#232f3e] text-white"
                       : "self-start bg-[#1b232d] text-[#d5dbdb]"
@@ -151,6 +182,11 @@ export function AmazonQPanel({
                   {message.text}
                 </div>
               ))}
+              {loading ? (
+                <div className="self-start max-w-[92%] rounded-lg bg-[#1b232d] px-3 py-2 text-[13px] leading-5 text-[#8d99a6]">
+                  Amazon Q is thinking…
+                </div>
+              ) : null}
             </div>
           )}
 
@@ -161,22 +197,22 @@ export function AmazonQPanel({
               rows={4}
               maxLength={10000}
               value={draft}
-              placeholder="Describe what you want to do with AWS, such as 'List all S3 buckets'."
+              placeholder="Ask about Route 53 hosted zones, records, or routing policies."
               className="w-full resize-none rounded-md border border-[#687078] bg-transparent px-3 py-2.5 pr-9 text-[14px] leading-5 font-normal text-white placeholder:text-[#8d99a6] placeholder:italic outline-none focus:border-[#42b4ff] focus:shadow-[0_0_0_1px_#42b4ff]"
               onChange={(event) => setDraft(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" && !event.shiftKey) {
                   event.preventDefault();
-                  send(draft);
+                  void send(draft);
                 }
               }}
             />
             <button
               type="button"
               aria-label="Send"
-              disabled={!draft.trim()}
+              disabled={!draft.trim() || loading}
               className="absolute right-2 bottom-3 inline-flex h-7 w-7 items-center justify-center text-white hover:text-[#42b4ff] disabled:text-[#545b64]"
-              onClick={() => send(draft)}
+              onClick={() => void send(draft)}
             >
               <SendHorizontal className="h-4 w-4" strokeWidth={2} />
             </button>

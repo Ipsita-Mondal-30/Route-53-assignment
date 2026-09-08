@@ -10,7 +10,7 @@ import {
   UserCircleIcon,
 } from "@/components/ui/icons";
 
-type OpenMenu = "language" | "support" | "account" | null;
+type OpenMenu = "language" | "support" | "account" | "profile" | null;
 
 const LANGUAGES_LEFT = [
   "العربية",
@@ -92,6 +92,7 @@ export function AwsTopBar() {
   const languageId = useId();
   const supportId = useId();
   const accountId = useId();
+  const profileId = useId();
   const barRef = useDismiss(openMenu !== null, () => setOpenMenu(null));
 
   function toggle(menu: Exclude<OpenMenu, null>) {
@@ -291,13 +292,40 @@ export function AwsTopBar() {
           ) : null}
         </div>
 
-        <Link
-          href="/signin"
-          className="aws-focus aws-glow rounded-full p-0.5 text-white"
-          aria-label="AWS profile"
-        >
-          <UserCircleIcon className="h-6 w-6" />
-        </Link>
+        <div className="relative">
+          <button
+            type="button"
+            aria-label="AWS Profile"
+            aria-expanded={openMenu === "profile"}
+            aria-haspopup="dialog"
+            aria-controls={profileId}
+            onClick={() => toggle("profile")}
+            className="aws-focus aws-glow rounded-full p-0.5 text-white"
+          >
+            <UserCircleIcon className="h-6 w-6" />
+          </button>
+          {openMenu === "profile" ? (
+            <div
+              id={profileId}
+              role="dialog"
+              aria-label="AWS Profile"
+              className="absolute top-[calc(100%+10px)] right-0 z-[70] w-[300px] rounded-2xl bg-white p-5 text-aws-ink shadow-[0_8px_28px_rgba(15,20,26,0.18)]"
+            >
+              <h2 className="text-[18px] font-bold text-aws-ink">AWS Profile</h2>
+              <p className="mt-2 text-[14px] leading-6 text-aws-muted">
+                Your profile helps improve your interactions with select AWS
+                experiences.
+              </p>
+              <Link
+                href="/login"
+                className="aws-btn-primary aws-focus mt-5 inline-flex h-11 w-full text-[14px]"
+                onClick={() => setOpenMenu(null)}
+              >
+                Create profile or sign in
+              </Link>
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );

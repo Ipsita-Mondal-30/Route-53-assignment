@@ -22,6 +22,9 @@ export const metadata: Metadata = {
   title: "Amazon Route 53 - DNS Service",
   description:
     "A reliable and cost-effective way to route end users to Internet applications",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
