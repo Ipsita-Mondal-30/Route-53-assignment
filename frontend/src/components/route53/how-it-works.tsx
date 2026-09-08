@@ -3,8 +3,8 @@ const linkClass =
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="px-5 py-16 md:px-8 md:py-24">
-      <div className="mx-auto grid max-w-[1450px] gap-10 md:grid-cols-[minmax(220px,0.38fr)_1fr] md:gap-16">
+    <section id="how-it-works" className="py-16 md:py-24">
+      <div className="aws-content grid gap-10 md:grid-cols-[minmax(220px,0.38fr)_1fr] md:gap-16">
         <h2 className="font-display text-[32px] leading-tight font-medium text-aws-ink">
           How it works
         </h2>

@@ -1,5 +1,6 @@
-import { ChatIcon, StarIcon } from "@/components/ui/icons";
+import { StarIcon } from "@/components/ui/icons";
 
+import { AskAwsWidget } from "@/components/layout/ask-aws-widget";
 import { AwsFooter } from "@/components/layout/aws-footer";
 import { AwsNavbar } from "@/components/layout/aws-navbar";
 import { AwsTopBar } from "@/components/layout/aws-top-bar";
@@ -24,21 +25,9 @@ function FavoriteButton() {
   );
 }
 
-function ChatButton() {
-  return (
-    <a
-      href="#"
-      aria-label="Chat with AWS"
-      className="aws-focus fixed right-4 bottom-5 z-50 flex h-12 w-12 items-center justify-center rounded-md bg-[#16191f] text-white shadow-[0_4px_16px_rgba(0,0,0,0.28)] hover:bg-black"
-    >
-      <ChatIcon className="h-6 w-6" />
-    </a>
-  );
-}
-
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div id="top" className="min-h-screen bg-white">
       <header className="sticky top-0 z-50">
         <AwsTopBar />
         <AwsNavbar />
@@ -62,7 +51,7 @@ export default function LandingPage() {
 
       <AwsFooter />
       <FavoriteButton />
-      <ChatButton />
+      <AskAwsWidget />
     </div>
   );
 }

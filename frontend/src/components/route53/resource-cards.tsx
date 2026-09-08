@@ -104,8 +104,8 @@ function CardLabel({ children }: { children: string }) {
 
 export function ResourceCards() {
   return (
-    <section id="get-started" className="px-5 py-16 md:px-8 md:py-24">
-      <div className="mx-auto max-w-[1450px]">
+    <section id="get-started" className="py-16 md:py-24">
+      <div className="aws-content">
         <h2 className="font-display mb-8 text-[32px] leading-tight font-medium text-aws-ink md:mb-10">
           Get started
         </h2>

@@ -55,12 +55,12 @@ export function Route53Navbar() {
   }, []);
 
   return (
-    <div className="sticky top-[130px] z-40 mx-auto w-[calc(100%-1.5rem)] max-w-[1450px] sm:top-[142px] md:w-[calc(100%-4rem)]">
+    <div className="aws-content sticky top-[130px] z-40 sm:top-[142px]">
       <div
         ref={containerRef}
-        className="relative rounded-xl border border-[#d9dce3] bg-white shadow-[0_6px_24px_rgba(15,20,26,0.12)]"
+        className="relative rounded-2xl border border-[#d9dce3] bg-white shadow-[0_6px_24px_rgba(15,20,26,0.12)]"
       >
-        <div className="flex flex-col gap-1 px-5 py-3 md:flex-row md:items-center md:justify-between md:px-8 md:py-0 md:h-[64px]">
+        <div className="flex flex-col gap-1 px-5 py-3 md:h-[64px] md:flex-row md:items-center md:gap-10 md:px-8 md:py-0 lg:gap-14">
           <a
             href="#overview"
             className="aws-focus text-[16px] font-bold text-aws-ink"

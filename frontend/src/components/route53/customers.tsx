@@ -51,12 +51,12 @@ function cardStyleFor(
 
   if (offset > 0) {
     translateY = offset * peekPx;
-    scale = 1 - Math.min(offset, 1) * 0.015;
+    scale = 1 - Math.min(offset, 1) * 0.012;
   } else if (offset < 0) {
     const leave = Math.min(1, -offset);
     translateY = offset * travelPx;
-    scale = 1 - leave * 0.045;
-    opacity = 1 - leave * 0.4;
+    scale = 1 - leave * 0.03;
+    opacity = 1 - leave * 0.12;
   } else {
     translateY = 0;
   }
@@ -130,8 +130,8 @@ export function Customers() {
 
   return (
     <section id="customers" className="case-studies">
-      <div className="case-studies-heading px-5 md:px-8">
-        <div className="mx-auto max-w-[1450px]">
+      <div className="case-studies-heading">
+        <div className="aws-content">
           <h2 className="font-display text-[32px] leading-tight font-medium text-aws-ink">
             Customers
           </h2>
@@ -139,8 +139,8 @@ export function Customers() {
       </div>
 
       {reducedMotion ? (
-        <div className="case-studies-fallback px-5 md:px-8">
-          <div className="mx-auto flex max-w-[1450px] flex-col gap-6">
+        <div className="case-studies-fallback">
+          <div className="aws-content flex flex-col gap-6">
             {stories.map((story) => (
               <article key={story.title} className="case-study-card-static">
                 <CaseStudyCardContent story={story} priority={false} />
@@ -155,31 +155,33 @@ export function Customers() {
           style={{ ["--case-count"]: String(count) } as CSSProperties}
         >
           <div className="case-studies-sticky">
-            <div className="case-studies-glow" aria-hidden="true" />
-            <div
-              ref={stackRef}
-              className="case-studies-stack"
-              aria-label="Customer case studies"
-            >
-              {stories.map((story, index) => {
-                const style = cardStyleFor(index, progress, count, travelPx);
-                return (
-                  <article
-                    key={story.title}
-                    className="case-study-card"
-                    style={{
-                      transform: style.transform,
-                      opacity: style.opacity,
-                      zIndex: style.zIndex,
-                    }}
-                  >
-                    <CaseStudyCardContent
-                      story={story}
-                      priority={index === 0}
-                    />
-                  </article>
-                );
-              })}
+            <div className="case-study-stack">
+              <div className="stack-glow" aria-hidden="true" />
+              <div
+                ref={stackRef}
+                className="case-studies-stack"
+                aria-label="Customer case studies"
+              >
+                {stories.map((story, index) => {
+                  const style = cardStyleFor(index, progress, count, travelPx);
+                  return (
+                    <article
+                      key={story.title}
+                      className="case-study-card"
+                      style={{
+                        transform: style.transform,
+                        opacity: style.opacity,
+                        zIndex: style.zIndex,
+                      }}
+                    >
+                      <CaseStudyCardContent
+                        story={story}
+                        priority={index === 0}
+                      />
+                    </article>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>

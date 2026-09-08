@@ -15,8 +15,8 @@ export function Feedback() {
   );
 
   return (
-    <section id="feedback" className="px-5 pb-8 md:px-8 md:pb-10">
-      <div className="mx-auto flex max-w-[1450px] flex-col justify-between gap-5 rounded-[16px] bg-linear-to-r from-[#c4f0f8] via-[#8fb4f4] to-[#c7a6f5] px-6 py-5 sm:flex-row sm:items-center sm:gap-8 md:px-8 md:py-[22px]">
+    <section id="feedback" className="pb-8 md:pb-10">
+      <div className="aws-content flex flex-col justify-between gap-5 rounded-[16px] bg-linear-to-r from-[#c4f0f8] via-[#8fb4f4] to-[#c7a6f5] px-6 py-6 sm:flex-row sm:items-center sm:gap-8 md:px-10 md:py-8">
         <div className="min-w-0">
           <h2 className="text-[18px] leading-[1.3] font-bold text-[#161d26] md:text-[20px]">
             Did you find what you were looking for today?
