@@ -101,6 +101,20 @@ def register_exception_handlers(app: FastAPI) -> None:
             request.url.path,
             exc_info=exc,
         )
+
+        # Surface DB outages as 503 instead of a generic 500 so the UI/ops
+        # can tell "DB down" from an application bug.
+        try:
+            from sqlalchemy.exc import DBAPIError, OperationalError
+
+            if isinstance(exc, (OperationalError, DBAPIError)):
+                return _error_response(
+                    status.HTTP_503_SERVICE_UNAVAILABLE,
+                    "Database unavailable. Try again later.",
+                )
+        except Exception:  # pragma: no cover - import/guard only
+            pass
+
         return _error_response(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "Internal server error",
