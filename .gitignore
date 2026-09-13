@@ -1,12 +1,9 @@
 # OS / editor
 .DS_Store
-.vscode/
 
 # Frontend
 node_modules
 .next
-.env
-.env.local
 
 # Backend
 __pycache__
@@ -19,3 +16,4 @@ __pycache__
 **/data/*.db
 backend/.env
 
+config.bat
